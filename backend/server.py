@@ -314,8 +314,22 @@ async def stream_file(path: str):
 
 
 def _file_url(request: Request, path: str) -> str:
-    """Build a public URL for a stored file that model-viewer / <video> can load."""
-    base = str(request.base_url).rstrip("/")
+    """Build a public URL for a stored file that model-viewer / <video> can load.
+
+    Priority:
+      1. PUBLIC_BASE_URL env var (explicit, most reliable behind ingress)
+      2. X-Forwarded-Proto + X-Forwarded-Host headers (set by the K8s ingress)
+      3. request.base_url (fallback for local dev)
+    """
+    base = os.environ.get("PUBLIC_BASE_URL")
+    if not base:
+        fwd_host = request.headers.get("x-forwarded-host")
+        fwd_proto = request.headers.get("x-forwarded-proto", "https")
+        if fwd_host:
+            base = f"{fwd_proto}://{fwd_host}"
+        else:
+            base = str(request.base_url)
+    base = base.rstrip("/")
     return f"{base}/api/files/{path}"
 
 

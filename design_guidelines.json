@@ -1,0 +1,82 @@
+{
+  "theme": "light_base_with_dark_kds",
+  "vibe": "Swiggy Instamart-style: chunky, high-energy retail, food-forward, saturated warm palette, playful micro-interactions, neo-brutalist edges.",
+  "typography": {
+    "primary_font": "Anton",
+    "secondary_font": "Manrope",
+    "strategy": "The Anti-Default Rule applies. NO Inter, Roboto, or Space Grotesk. Use Anton for massive, chunky, high-impact display headings (tight tracking, leading-none). Use Manrope for highly legible, condensed body text and dense data inside dashboards. Jump scale radically: H1 at text-5xl/6xl, Body at text-sm.",
+    "imports": "yarn add @fontsource/anton @fontsource/manrope"
+  },
+  "colors": {
+    "background_light": "#F9F8F6",
+    "surface_light": "#FFFFFF",
+    "primary": "#FC8019",
+    "primary_hover": "#E56B0C",
+    "text_dark": "#0A0A0A",
+    "text_muted": "#4B5563",
+    "accent_green": "#00C244",
+    "accent_red": "#FF3B30",
+    "kds_background": "#0A0A0A",
+    "kds_surface": "#141414",
+    "kds_text": "#FFFFFF",
+    "strategy": "Archetype: Vibrant Play combined with Swiss Brutalist structural grids. Warm cream backgrounds make the saturated hot orange (#FC8019) pop. The KDS should use a 'Performance Pro' Dark Mode (Command Center focus) for low-glare kitchen environments."
+  },
+  "surfaces_and_borders": {
+    "marketing_cards": "Neo-Brutalist: Flat solid surfaces with sharp 2px solid black borders, 4px border radius, and offset hard drop shadows (e.g., shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]).",
+    "kds_kanban": "High-density grid borders. Exposed skeletal grid with 1px border-border/40. No soft shadows. High contrast.",
+    "diner_mobile": "Softer approach. Pill-shaped buttons (rounded-full) for 'Add to Cart', immersive edge-to-edge images, bottom sheet overlays using Crystal Glassmorphism (backdrop-blur-xl bg-white/70 with 1px white/40 border).",
+    "forbidden": "No muddy transparent backgrounds behind text. No generic Vercel soft-shadow styles."
+  },
+  "layouts": {
+    "marketing": "Mode A (Tetris Grid). Asymmetric overlaps. Use raw div/sections for organic spacing. Include a slow 'Editorial Ribbon' Marquee with massive text running in the background.",
+    "merchant_admin": "Swiss Grid. Left sidebar, strict alignment. 1px borders separating all widgets.",
+    "kds_tablet": "Mode B (High Density Grid). Kanban style. Edge-to-edge full viewport. Tight gaps (gap-4). Touch-optimized massive drag targets.",
+    "diner_mobile": "Mobile-first, single column. Dish detail page MUST dedicate 50-60vh to the <model-viewer> WebAR interaction. Floating bottom sticky cart."
+  },
+  "motion": {
+    "buttons": "Active scale down (active:scale-95), rapid hover states.",
+    "lists": "Staggered entrance animations for menu categories and incoming KDS tickets.",
+    "interactions": "Hover states must explicitly change text color and background for high contrast."
+  },
+  "media": {
+    "3d_libraries": {
+      "strategy": "Use strictly Google's <model-viewer> component to render .glb/.usdz formats for dishes. Do NOT use heavy WebGL scenes like R3F here—prioritize quick load, mobile-friendly WebAR.",
+      "implementation": "<model-viewer src='url' ar auto-rotate camera-controls shadow-intensity='1' style='width: 100%; height: 100%; background-color: transparent;'></model-viewer>",
+      "model_urls": {
+        "avocado_sample": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/Avocado/glTF-Binary/Avocado.glb",
+        "drink_sample": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/WaterBottle/glTF-Binary/WaterBottle.glb",
+        "dessert_sample": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/Suzanne/glTF-Binary/Suzanne.glb"
+      }
+    },
+    "image_urls": {
+      "hero_customer_qr": "https://images.unsplash.com/photo-1682072155213-856c2ab9d629?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjY2NzN8MHwxfHNlYXJjaHwyfHxjdXN0b21lciUyMHNjYW5uaW5nJTIwcXIlMjBjb2RlJTIwcmVzdGF1cmFudHxlbnwwfHx8fDE3ODM4NzkzMDl8MA&ixlib=rb-4.1.0&q=85",
+      "kds_staff_tablet": "https://images.unsplash.com/photo-1622021142947-da7dedc7c39a?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2OTF8MHwxfHNlYXJjaHwyfHxyZXN0YXVyYW50JTIwa2l0Y2hlbiUyMHN0YWZmJTIwdGFibGV0fGVufDB8fHx8MTc4Mzg3OTMwOXww&ixlib=rb-4.1.0&q=85",
+      "burger_dish": "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1NTJ8MHwxfHNlYXJjaHwxfHxkZWxpY2lvdXMlMjBidXJnZXIlMjBmYXN0JTIwZm9vZHxlbnwwfHx8fDE3ODM4NzkzMDl8MA&ixlib=rb-4.1.0&q=85",
+      "pizza_dish": "https://images.unsplash.com/photo-1544982503-9f984c14501a?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDQ2NDJ8MHwxfHNlYXJjaHwxfHxmcmVzaCUyMHBpenphJTIwc2xpY2V8ZW58MHx8fHwxNzgzODc5MzA5fDA&ixlib=rb-4.1.0&q=85",
+      "sushi_dish": "https://images.unsplash.com/photo-1579584425555-c3ce17fd4351?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NTYxODh8MHwxfHNlYXJjaHwxfHxmcmVzaCUyMHN1c2hpJTIwcm9sbHxlbnwwfHx8fDE3ODM4NzkzMDl8MA&ixlib=rb-4.1.0&q=85"
+    }
+  },
+  "accessibility": {
+    "contrast": "Text on primary orange buttons must be #FFFFFF (or tested for WCAG). Avoid gray on gray entirely.",
+    "focus": "All active inputs and buttons must have distinct focus rings (e.g., focus:ring-2 focus:ring-primary focus:outline-none).",
+    "testing": "All interactive and key informational elements MUST include a `data-testid` attribute (e.g., data-testid='checkout-submit-btn')."
+  },
+  "instructions_to_main_agent": [
+    "Build out the multiple flows: Marketing, Diner App, Admin Dashboard, and KDS.",
+    "Embrace the 'Instamart' vibe—high visual energy, stark black text/borders on cream or bright orange.",
+    "The Diner mobile flow is the core experience. Prioritize an immersive <model-viewer> UI that feels fast.",
+    "The KDS should look like a command center. Kanban boards with draggable or tappable states.",
+    "Add 'data-testid' to EVERYTHING interactive.",
+    "Ensure the `<model-viewer>` component is dynamically loaded or initialized cleanly within React.",
+    "Use Phosphor icons (@phosphor-icons/react) for sharp, high-end iconography."
+  ],
+  "UNIVERSAL GUIDELINES FOR MAIN AGENT": [
+    "You tend to converge toward generic, 'on distribution' outputs. Do not default to Vercel/Stripe styles. Push for creative tension.",
+    "Never apply universal transitions (e.g., transition: all). Add explicit transitions (transition-colors, transition-transform).",
+    "Do NOT center align the app container (.App { text-align: center; }). Keep natural reading flow.",
+    "Always use modern button styles (pill-shaped for consumer, sharp for admin) with interaction animations.",
+    "Use Sonner for toast notifications.",
+    "Never use placeholder URLs (like via.placeholder.com). Use the provided image URLs.",
+    "Do NOT use HTML <select> or <input type='date'>. Use Shadcn Dropdowns, Selects, and Calendars."
+  ]
+}

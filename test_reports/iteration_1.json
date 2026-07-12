@@ -1,0 +1,64 @@
+{
+  "summary": "Comprehensive backend + frontend testing of Tabler AR multi-tenant B2B SaaS. 23/24 backend tests passed. All requested frontend flows (landing, login, register, dashboard, KDS websocket, diner menu with cart & order placement, dish detail with model-viewer, super admin) verified end-to-end. One backend bug found: super admin model upload returns a `model_url` built from `request.base_url` which resolves to the internal cluster host (http://...cluster-5.preview.emergentcf.cloud) and is NOT publicly reachable (returns 403). The public REACT_APP_BACKEND_URL host serves the same file with HTTP 200 + Content-Type model/gltf-binary correctly. This also causes Mixed Content warnings on the HTTPS diner page.",
+  "backend_issues": {
+    "critical": [
+      {
+        "endpoint": "POST /api/superadmin/dishes/{id}/upload-model  (and _file_url helper used by /api/superadmin/queue, /api/tenant/dishes/{id}/upload-video, /api/superadmin/queue/all)",
+        "issue": "Returned model_url / video_url is built with `str(request.base_url)` which resolves to internal http://ar-order-sync.cluster-5.preview.emergentcf.cloud host that is NOT publicly reachable (returns 403 externally). Same file loaded from the public host https://ar-order-sync.preview.emergentagent.com/api/files/... returns HTTP 200 with Content-Type model/gltf-binary. This breaks <model-viewer> for user-uploaded models and triggers Mixed Content blocking on the HTTPS diner page. Fix: use a configured PUBLIC_BASE_URL env (or REACT_APP_BACKEND_URL) or honor X-Forwarded-Proto/Host to build public URLs.",
+        "priority": "HIGH"
+      }
+    ],
+    "minor": [
+      {
+        "endpoint": "CORS + auth cookies",
+        "issue": "CORSMiddleware uses allow_origins=['*'] with allow_credentials=False, but /api/auth/login sets an httponly SameSite=None Secure cookie. Cookie-based auth will not work cross-origin in the browser due to allow_credentials=False. Frontend uses Bearer token from localStorage, so this is currently non-blocking, but the cookie code path is effectively dead / misleading."
+      },
+      {
+        "endpoint": "POST /api/auth/login",
+        "issue": "No brute-force / rate-limit / account lockout on failed logins (playbook expects lockout after 5 fails)."
+      },
+      {
+        "endpoint": "POST /api/auth/register",
+        "issue": "Duplicate slug returns 400 (test accepts 400/409); consider 409 Conflict for semantic correctness."
+      }
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [
+      {
+        "flow": "Diner menu / model preview for user-uploaded models",
+        "issue": "Mixed Content: page loads https://... but model_url from backend is http://ar-order-sync.cluster-5.preview.emergentcf.cloud/... Browser blocks the resource. Root cause is backend `_file_url()` — see backend critical bug.",
+        "affected_selectors": ["model-viewer", "[data-testid='dish-detail-sheet']"]
+      }
+    ],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/backend_test.py",
+    "/app/backend/tests/pytest.ini",
+    "/app/test_reports/pytest/pytest_results.xml"
+  ],
+  "action_items": [
+    "FIX (HIGH): Update backend/server.py `_file_url()` to build public URLs from env (e.g. os.environ['PUBLIC_BASE_URL'] or REACT_APP_BACKEND_URL) or honor X-Forwarded-Proto / X-Forwarded-Host. Currently it uses request.base_url which is the internal cluster host and is not publicly reachable (403) and breaks HTTPS Mixed Content policy for <model-viewer>.",
+    "MINOR: Either enable allow_credentials with an explicit origin list, or remove cookie-based auth code since only Bearer tokens are used.",
+    "MINOR: Add login brute-force lockout per playbook (5 fails)."
+  ],
+  "critical_code_review_comments": [
+    "server.py `_file_url()` uses request.base_url — incorrect behind ingress. Must use forwarded headers or PUBLIC_BASE_URL env.",
+    "CORS allow_origins='*' with allow_credentials=False is inconsistent with set_auth_cookie (SameSite=None; Secure) — cookie-auth path is broken; either fix or delete.",
+    "No login rate-limiting/brute-force lockout.",
+    "seed.py `_write_test_creds()` overwrites /app/memory/test_credentials.md on every startup — fine, but keep in mind for any manual edits."
+  ],
+  "updated_files": [
+    "/app/backend/tests/backend_test.py (new pytest suite, 24 tests)",
+    "/app/backend/tests/pytest.ini (new)"
+  ],
+  "success_rate": {"backend": "96% (23/24)", "frontend": "100% of tested flows"},
+  "test_credentials": "Super admin admin@tabler.ar/admin123; Demo tenant demo@spice.co/demo123 (slug=spice-route). Also created a throwaway tenant during tests.",
+  "seed_data_creation": "During backend tests a TEST_Specials category, TEST_Dish, dummy mp4/glb, and a couple of orders were created under Spice Route. Not cleaned up (safe to remove or leave). Also created a scratch tenant via /auth/register.",
+  "retest_needed": true,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "All API surfaces exercised. Only the file public-URL host issue remains. After fix, retest test_super_admin_upload_model_makes_dish_ready and confirm the diner page has no Mixed Content warnings for user-uploaded models. Existing seeded dishes still work because they use external Khronos gLTF URLs.",
+  "rca of the issue": "Backend generates public file URLs via `str(request.base_url).rstrip('/')` in server.py `_file_url()`. Behind Kubernetes ingress, request.base_url is populated from the internal Host header (ar-order-sync.cluster-5.preview.emergentcf.cloud) and scheme http, not the external https://ar-order-sync.preview.emergentagent.com. As a result the returned model_url points at an internal host that (a) returns 403 externally and (b) is http, causing Mixed Content blocking on the HTTPS diner page. Reproduce: POST /api/superadmin/dishes/<id>/upload-model with any .glb → response.model_url → GET that URL externally returns 403; rewrite host to https://ar-order-sync.preview.emergentagent.com and the same path returns 200 model/gltf-binary. Fix: honor X-Forwarded-Proto and X-Forwarded-Host, or use an env var PUBLIC_BASE_URL (or REACT_APP_BACKEND_URL) to construct the URL."
+}

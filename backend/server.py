@@ -1,9 +1,8 @@
 """Tabler AR — Multi-tenant B2B SaaS backend (FastAPI + MongoDB).
 
-- JWT auth (super_admin, tenant_admin, staff)
-- Strict tenant_id filtering on every query
+- JWT auth (super_admin, tenant_admin, staff) with strict tenant_id filtering
 - Real-time KDS via WebSocket
-- Stubbed video->3D pipeline (Meshy-ready)
+- Human-in-the-loop video -> 3D model pipeline via Emergent object storage
 """
 from dotenv import load_dotenv
 from pathlib import Path
@@ -18,33 +17,35 @@ import logging
 from datetime import datetime, timezone, timedelta
 from typing import Optional, List
 
-from fastapi import FastAPI, APIRouter, HTTPException, Depends, Response, WebSocket, WebSocketDisconnect, Query
+from fastapi import (
+    FastAPI, APIRouter, HTTPException, Depends, Response, WebSocket,
+    WebSocketDisconnect, Query, UploadFile, File, Request,
+)
+from fastapi.responses import Response as FastResponse
 from fastapi.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 from pydantic import BaseModel, EmailStr, Field
 
 from auth import (
-    hash_password,
-    verify_password,
-    create_access_token,
-    decode_token,
-    get_current_user,
-    set_auth_cookie,
-    clear_auth_cookie,
+    hash_password, verify_password, create_access_token, decode_token,
+    get_current_user, set_auth_cookie, clear_auth_cookie,
 )
-from seed import seed_all, SAMPLE_GLBS
+from seed import seed_all
 from ws_manager import manager
+from storage import init_storage, put_object, get_object, guess_mime, APP_NAME
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
 log = logging.getLogger("tabler")
 
-# ---- DB ----
 mongo_url = os.environ["MONGO_URL"]
 client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ["DB_NAME"]]
 
 app = FastAPI(title="Tabler AR")
 api = APIRouter(prefix="/api")
+
+MAX_VIDEO_BYTES = 60 * 1024 * 1024   # 60MB
+MAX_MODEL_BYTES = 25 * 1024 * 1024   # 25MB
 
 
 def now_iso() -> str:
@@ -56,7 +57,7 @@ def new_id() -> str:
 
 
 # =========================================================
-# Auth models & endpoints
+# Auth models
 # =========================================================
 class RegisterIn(BaseModel):
     email: EmailStr
@@ -139,6 +140,15 @@ async def require_tenant_admin(user=Depends(get_current_user)) -> dict:
     return user
 
 
+async def require_super_admin(user=Depends(get_current_user)) -> dict:
+    if user["role"] != "super_admin":
+        raise HTTPException(status_code=403, detail="Super admin only")
+    return user
+
+
+# =========================================================
+# Auth endpoints
+# =========================================================
 @api.post("/auth/register")
 async def register(payload: RegisterIn, response: Response):
     email = payload.email.lower()
@@ -152,7 +162,7 @@ async def register(payload: RegisterIn, response: Response):
         "id": tenant_id,
         "slug": payload.slug,
         "name": payload.restaurant_name,
-        "tagline": "Welcome to " + payload.restaurant_name,
+        "tagline": f"Welcome to {payload.restaurant_name}",
         "brand_color": "#FC8019",
         "logo_url": None,
         "hero_image": "https://images.unsplash.com/photo-1552566626-52f8b828add9?w=1200",
@@ -170,7 +180,6 @@ async def register(payload: RegisterIn, response: Response):
         "tenant_id": tenant_id,
         "created_at": now_iso(),
     })
-    # seed a few tables so they can immediately start
     for i in range(1, 5):
         await db.tables.insert_one({
             "id": new_id(),
@@ -209,7 +218,7 @@ async def me(user=Depends(get_current_user)):
 
 
 # =========================================================
-# Public diner endpoints (no auth)
+# Public diner endpoints
 # =========================================================
 @api.get("/menu/{slug}")
 async def get_menu(slug: str, table: Optional[str] = None):
@@ -275,9 +284,7 @@ async def place_order(payload: OrderIn):
     await db.orders.insert_one(doc)
     doc.pop("_id", None)
 
-    # broadcast to KDS
     asyncio.create_task(manager.broadcast(tenant_id, {"event": "order.new", "order": doc}))
-
     return {"order_id": order_id, "order_no": order_no, "total": total, "status": "new"}
 
 
@@ -290,7 +297,30 @@ async def get_order_public(order_id: str):
 
 
 # =========================================================
-# Tenant endpoints (auth required)
+# Public file streaming (for <model-viewer> src, video previews)
+# Paths are UUID-based and stored in DB — obscurity + DB lookup is the gate.
+# =========================================================
+@api.get("/files/{path:path}")
+async def stream_file(path: str):
+    rec = await db.files.find_one({"storage_path": path, "is_deleted": False}, {"_id": 0})
+    if not rec:
+        raise HTTPException(404, "File not found")
+    try:
+        data, ctype = get_object(path)
+    except Exception as e:
+        log.warning("storage fetch failed: %s", e)
+        raise HTTPException(500, "Storage error")
+    return FastResponse(content=data, media_type=rec.get("content_type") or ctype)
+
+
+def _file_url(request: Request, path: str) -> str:
+    """Build a public URL for a stored file that model-viewer / <video> can load."""
+    base = str(request.base_url).rstrip("/")
+    return f"{base}/api/files/{path}"
+
+
+# =========================================================
+# Tenant endpoints
 # =========================================================
 def _tid(user: dict) -> str:
     tid = user.get("tenant_id")
@@ -342,10 +372,12 @@ async def create_dish(payload: DishIn, user=Depends(require_tenant_admin)):
     doc = {
         "id": new_id(),
         "tenant_id": tid,
-        "category_kind": cat["kind"],
+        "category_kind": cat.get("kind", "default"),
         **payload.model_dump(),
         "model_url": None,
-        "model_status": "none",  # none | processing | ready | failed
+        "model_status": "none",     # none | pending_review | processing | ready | failed
+        "video_path": None,          # storage path of the source video
+        "video_uploaded_at": None,
         "created_at": now_iso(),
     }
     await db.dishes.insert_one(doc)
@@ -373,26 +405,53 @@ async def delete_dish(did: str, user=Depends(require_tenant_admin)):
     return {"ok": True}
 
 
-@api.post("/tenant/dishes/{did}/generate-3d")
-async def generate_3d(did: str, user=Depends(require_tenant_admin)):
-    """Kick off video->3D pipeline. Currently stubbed: assigns a sample GLB matching the dish's
-    category after a simulated processing delay. Swap the stub with a real Meshy AI call when
-    an API key is available (image-to-3D from an extracted frame).
-    """
+@api.post("/tenant/dishes/{did}/upload-video")
+async def upload_dish_video(did: str, request: Request, file: UploadFile = File(...), user=Depends(require_tenant_admin)):
+    """Merchant uploads a video of the dish. Enqueued for super-admin manual 3D processing."""
     tid = _tid(user)
     dish = await db.dishes.find_one({"id": did, "tenant_id": tid})
     if not dish:
         raise HTTPException(404, "Dish not found")
-    await db.dishes.update_one({"id": did}, {"$set": {"model_status": "processing", "model_url": None}})
 
-    async def _finish():
-        await asyncio.sleep(6)  # simulate ML pipeline
-        kind = dish.get("category_kind", "default")
-        model_url = SAMPLE_GLBS.get(kind, SAMPLE_GLBS["default"])
-        await db.dishes.update_one({"id": did}, {"$set": {"model_status": "ready", "model_url": model_url}})
+    data = await file.read()
+    if len(data) == 0:
+        raise HTTPException(400, "Empty upload")
+    if len(data) > MAX_VIDEO_BYTES:
+        raise HTTPException(413, f"Video too large. Max {MAX_VIDEO_BYTES // (1024 * 1024)}MB")
+    ext = (file.filename.rsplit(".", 1)[-1] if file.filename and "." in file.filename else "mp4").lower()
+    if ext not in ("mp4", "mov", "webm"):
+        raise HTTPException(400, "Unsupported video format. Use mp4, mov or webm.")
 
-    asyncio.create_task(_finish())
-    return {"status": "processing"}
+    path = f"{APP_NAME}/videos/{tid}/{did}/{uuid.uuid4()}.{ext}"
+    ctype = file.content_type or guess_mime(file.filename or "", "video/mp4")
+    try:
+        result = put_object(path, data, ctype)
+    except Exception as e:
+        log.exception("video upload failed: %s", e)
+        raise HTTPException(500, "Storage upload failed")
+
+    stored_path = result["path"]
+    await db.files.insert_one({
+        "id": new_id(),
+        "storage_path": stored_path,
+        "original_filename": file.filename or f"dish-{did}.{ext}",
+        "content_type": ctype,
+        "size": result.get("size", len(data)),
+        "tenant_id": tid,
+        "dish_id": did,
+        "kind": "video",
+        "is_deleted": False,
+        "created_at": now_iso(),
+    })
+    await db.dishes.update_one(
+        {"id": did},
+        {"$set": {"video_path": stored_path, "model_status": "pending_review",
+                  "video_uploaded_at": now_iso()}}
+    )
+    return {
+        "status": "pending_review",
+        "video_url": _file_url(request, stored_path),
+    }
 
 
 # Tables
@@ -464,7 +523,6 @@ async def analytics(user=Depends(require_tenant_admin)):
             dish_counts[it["name"]] = dish_counts.get(it["name"], 0) + it["qty"]
     top_dishes = sorted(dish_counts.items(), key=lambda x: -x[1])[:5]
 
-    # daily revenue for last 7 days
     daily: dict = {}
     for o in week_orders:
         if o["status"] == "cancelled":
@@ -484,7 +542,127 @@ async def analytics(user=Depends(require_tenant_admin)):
 
 
 # =========================================================
-# WebSocket for KDS
+# Super Admin — 3D Model Queue + tenant oversight
+# =========================================================
+@api.get("/superadmin/stats")
+async def sa_stats(_=Depends(require_super_admin)):
+    tenants = await db.tenants.count_documents({})
+    dishes = await db.dishes.count_documents({})
+    orders = await db.orders.count_documents({})
+    pending = await db.dishes.count_documents({"model_status": "pending_review"})
+    ready = await db.dishes.count_documents({"model_status": "ready"})
+    return {"tenants": tenants, "dishes": dishes, "orders": orders,
+            "pending_models": pending, "ready_models": ready}
+
+
+@api.get("/superadmin/tenants")
+async def sa_tenants(_=Depends(require_super_admin)):
+    tenants = await db.tenants.find({}, {"_id": 0}).sort("created_at", -1).to_list(1000)
+    for t in tenants:
+        t["dish_count"] = await db.dishes.count_documents({"tenant_id": t["id"]})
+        t["order_count"] = await db.orders.count_documents({"tenant_id": t["id"]})
+    return tenants
+
+
+@api.get("/superadmin/queue")
+async def sa_queue(request: Request, _=Depends(require_super_admin)):
+    """List every dish that needs 3D model processing."""
+    dishes = await db.dishes.find(
+        {"model_status": {"$in": ["pending_review", "processing"]}},
+        {"_id": 0}
+    ).sort("video_uploaded_at", 1).to_list(500)
+    for d in dishes:
+        t = await db.tenants.find_one({"id": d["tenant_id"]}, {"_id": 0, "name": 1, "slug": 1})
+        d["tenant"] = t
+        if d.get("video_path"):
+            d["video_url"] = _file_url(request, d["video_path"])
+    return dishes
+
+
+@api.get("/superadmin/queue/all")
+async def sa_queue_all(request: Request, _=Depends(require_super_admin)):
+    """All dishes across all tenants — for the super-admin to see everything."""
+    dishes = await db.dishes.find({}, {"_id": 0}).sort("created_at", -1).to_list(2000)
+    for d in dishes:
+        t = await db.tenants.find_one({"id": d["tenant_id"]}, {"_id": 0, "name": 1, "slug": 1})
+        d["tenant"] = t
+        if d.get("video_path"):
+            d["video_url"] = _file_url(request, d["video_path"])
+        if d.get("model_url_path"):
+            d["model_url"] = _file_url(request, d["model_url_path"])
+    return dishes
+
+
+@api.post("/superadmin/dishes/{did}/upload-model")
+async def sa_upload_model(did: str, request: Request, file: UploadFile = File(...), _=Depends(require_super_admin)):
+    """Super admin uploads the processed .glb (or .usdz) for a specific dish."""
+    dish = await db.dishes.find_one({"id": did})
+    if not dish:
+        raise HTTPException(404, "Dish not found")
+
+    data = await file.read()
+    if len(data) == 0:
+        raise HTTPException(400, "Empty upload")
+    if len(data) > MAX_MODEL_BYTES:
+        raise HTTPException(413, f"Model too large. Max {MAX_MODEL_BYTES // (1024 * 1024)}MB")
+    ext = (file.filename.rsplit(".", 1)[-1] if file.filename and "." in file.filename else "glb").lower()
+    if ext not in ("glb", "usdz"):
+        raise HTTPException(400, "Only .glb or .usdz accepted")
+
+    path = f"{APP_NAME}/models/{dish['tenant_id']}/{did}/{uuid.uuid4()}.{ext}"
+    ctype = guess_mime(f"x.{ext}", "model/gltf-binary")
+    try:
+        result = put_object(path, data, ctype)
+    except Exception as e:
+        log.exception("model upload failed: %s", e)
+        raise HTTPException(500, "Storage upload failed")
+
+    stored_path = result["path"]
+    await db.files.insert_one({
+        "id": new_id(),
+        "storage_path": stored_path,
+        "original_filename": file.filename or f"dish-{did}.{ext}",
+        "content_type": ctype,
+        "size": result.get("size", len(data)),
+        "tenant_id": dish["tenant_id"],
+        "dish_id": did,
+        "kind": "model",
+        "is_deleted": False,
+        "created_at": now_iso(),
+    })
+    public_url = _file_url(request, stored_path)
+    await db.dishes.update_one(
+        {"id": did},
+        {"$set": {
+            "model_status": "ready",
+            "model_url_path": stored_path,
+            "model_url": public_url,
+        }}
+    )
+    return {"status": "ready", "model_url": public_url}
+
+
+@api.post("/superadmin/dishes/{did}/mark-processing")
+async def sa_mark_processing(did: str, _=Depends(require_super_admin)):
+    res = await db.dishes.update_one({"id": did}, {"$set": {"model_status": "processing"}})
+    if res.matched_count == 0:
+        raise HTTPException(404, "Not found")
+    return {"ok": True}
+
+
+@api.post("/superadmin/dishes/{did}/reset")
+async def sa_reset(did: str, _=Depends(require_super_admin)):
+    res = await db.dishes.update_one(
+        {"id": did},
+        {"$set": {"model_status": "none", "model_url": None, "model_url_path": None, "video_path": None}}
+    )
+    if res.matched_count == 0:
+        raise HTTPException(404, "Not found")
+    return {"ok": True}
+
+
+# =========================================================
+# WebSocket — Kitchen Display System
 # =========================================================
 @api.websocket("/ws/kds")
 async def ws_kds(ws: WebSocket, token: str = Query(...)):
@@ -499,14 +677,12 @@ async def ws_kds(ws: WebSocket, token: str = Query(...)):
         return
     await manager.connect(tenant_id, ws)
     try:
-        # replay recent open orders
         open_orders = await db.orders.find(
             {"tenant_id": tenant_id, "status": {"$in": ["new", "preparing", "ready"]}},
             {"_id": 0}
         ).sort("created_at", -1).limit(50).to_list(50)
         await ws.send_json({"event": "snapshot", "orders": list(reversed(open_orders))})
         while True:
-            # keep-alive: ignore any incoming messages, just keep the socket open
             await ws.receive_text()
     except WebSocketDisconnect:
         manager.disconnect(tenant_id, ws)
@@ -533,9 +709,10 @@ app.include_router(api)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
-    allow_credentials=False,  # can't use credentials with wildcard; we use Bearer token for auth
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["*"],
 )
 
 
@@ -546,6 +723,10 @@ async def on_startup():
         log.info("Seed complete")
     except Exception as e:
         log.exception("Seed failed: %s", e)
+    try:
+        init_storage()
+    except Exception as e:
+        log.warning("Storage init failed (will retry on first use): %s", e)
 
 
 @app.on_event("shutdown")

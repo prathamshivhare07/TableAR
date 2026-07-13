@@ -31,8 +31,8 @@ from backend.auth import (
     get_current_user, set_auth_cookie, clear_auth_cookie,
 )
 from backend.seed import seed_all
-from ws_manager import manager
-from storage import init_storage, put_object, get_object, guess_mime, APP_NAME
+from backend.ws_manager import manager
+from backend.storage import init_storage, put_object, get_object, guess_mime, APP_NAME
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
 log = logging.getLogger("tabler")

@@ -30,7 +30,7 @@ from backend.auth import (
     hash_password, verify_password, create_access_token, decode_token,
     get_current_user, set_auth_cookie, clear_auth_cookie,
 )
-from seed import seed_all
+from backend.seed import seed_all
 from ws_manager import manager
 from storage import init_storage, put_object, get_object, guess_mime, APP_NAME
 

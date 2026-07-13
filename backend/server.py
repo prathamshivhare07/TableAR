@@ -720,10 +720,11 @@ async def health():
 
 app.include_router(api)
 
+_cors_origins = [o.strip() for o in os.environ.get("CORS_ORIGINS", "*").split(",") if o.strip()]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=False,
+    allow_origins=_cors_origins,
+    allow_credentials=False,  # We use Bearer tokens, not cookies, cross-origin.
     allow_methods=["*"],
     allow_headers=["*"],
     expose_headers=["*"],

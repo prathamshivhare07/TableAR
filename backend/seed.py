@@ -3,7 +3,7 @@ import os
 import uuid
 from datetime import datetime, timezone
 
-from auth import hash_password, verify_password
+from backend.auth import hash_password, verify_password
 
 # 3D model pool — used by the stub video->3D pipeline to assign a realistic sample.
 SAMPLE_GLBS = {

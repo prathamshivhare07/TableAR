@@ -241,6 +241,7 @@ function OverviewTab({ analytics, orders, dishes }) {
 function MenuTab({ dishes, categories, onChanged }) {
     const [editing, setEditing] = useState(null); // dish for video upload
     const [creating, setCreating] = useState(false);
+    const [managingCats, setManagingCats] = useState(false);
 
     async function toggleAvail(d) {
         try {
@@ -263,11 +264,29 @@ function MenuTab({ dishes, categories, onChanged }) {
                 <div>
                     <div className="text-[10px] uppercase tracking-widest font-extrabold text-[#FC8019]">Menu</div>
                     <h1 className="font-display text-5xl">Dishes & 3D</h1>
+                    <div className="text-xs uppercase tracking-widest font-bold text-gray-500 mt-2">
+                        {categories.length} categor{categories.length === 1 ? "y" : "ies"} · {dishes.length} dish{dishes.length === 1 ? "" : "es"}
+                    </div>
                 </div>
-                <button className="brand-btn px-4 py-3 text-sm inline-flex items-center gap-2" onClick={() => setCreating(true)} data-testid="new-dish-btn">
-                    <Plus size={16} weight="bold" /> New dish
-                </button>
+                <div className="flex flex-wrap gap-2">
+                    <button className="ghost-btn px-4 py-3 text-sm inline-flex items-center gap-2" onClick={() => setManagingCats(true)} data-testid="manage-categories-btn">
+                        <ChartLineUp size={16} weight="bold" /> Manage categories
+                    </button>
+                    <button className="brand-btn px-4 py-3 text-sm inline-flex items-center gap-2" onClick={() => setCreating(true)} data-testid="new-dish-btn">
+                        <Plus size={16} weight="bold" /> New dish
+                    </button>
+                </div>
             </div>
+
+            {categories.length === 0 && (
+                <div className="hard-border bg-[#FFF3E7] p-6 mb-6 flex items-center justify-between gap-4 flex-wrap" data-testid="no-categories-banner">
+                    <div>
+                        <div className="font-display text-2xl">No categories yet.</div>
+                        <div className="text-sm text-gray-700 mt-1">You need at least one category before adding a dish. Start with something like "Signature Burgers" or "Desserts".</div>
+                    </div>
+                    <button className="brand-btn px-4 py-3 text-sm" onClick={() => setManagingCats(true)} data-testid="create-first-cat-btn">Create your first category →</button>
+                </div>
+            )}
 
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 stagger">
                 {dishes.map((d) => {
@@ -316,8 +335,106 @@ function MenuTab({ dishes, categories, onChanged }) {
                 <VideoUploadModal dish={editing} onClose={() => setEditing(null)} onDone={() => { setEditing(null); onChanged(); }} />
             )}
             {creating && (
-                <NewDishModal categories={categories} onClose={() => setCreating(false)} onDone={() => { setCreating(false); onChanged(); }} />
+                <NewDishModal categories={categories} onClose={() => setCreating(false)} onDone={() => { setCreating(false); onChanged(); }} onManageCategories={() => { setCreating(false); setManagingCats(true); }} />
             )}
+            {managingCats && (
+                <CategoriesModal categories={categories} onClose={() => setManagingCats(false)} onChanged={onChanged} />
+            )}
+        </div>
+    );
+}
+
+function CategoriesModal({ categories, onClose, onChanged }) {
+    const KINDS = [
+        { k: "burger", label: "Burger" },
+        { k: "pizza", label: "Pizza" },
+        { k: "sushi", label: "Sushi" },
+        { k: "drink", label: "Drink" },
+        { k: "dessert", label: "Dessert" },
+        { k: "default", label: "Other" },
+    ];
+    const [name, setName] = useState("");
+    const [emoji, setEmoji] = useState("🍽️");
+    const [kind, setKind] = useState("default");
+    const [saving, setSaving] = useState(false);
+
+    async function create() {
+        if (!name.trim()) { toast.error("Name required"); return; }
+        setSaving(true);
+        try {
+            await http.post("/tenant/categories", {
+                name: name.trim(),
+                emoji,
+                kind,
+                sort_order: categories.length,
+            });
+            setName("");
+            setEmoji("🍽️");
+            toast.success("Category added");
+            onChanged();
+        } catch (e) { toast.error(formatApiError(e)); } finally { setSaving(false); }
+    }
+
+    async function del(c) {
+        if (!window.confirm(`Delete category "${c.name}"?\n(Dishes in this category will remain but become uncategorised.)`)) return;
+        try {
+            await http.delete(`/tenant/categories/${c.id}`);
+            toast.success("Category deleted");
+            onChanged();
+        } catch (e) { toast.error(formatApiError(e)); }
+    }
+
+    return (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" data-testid="categories-modal">
+            <div className="bg-white hard-border hard-shadow-lg w-full max-w-xl p-6 max-h-[92vh] flex flex-col">
+                <div className="flex items-center justify-between mb-4">
+                    <div>
+                        <div className="text-[10px] uppercase tracking-widest font-extrabold text-[#FC8019]">Menu</div>
+                        <div className="font-display text-3xl">Manage categories</div>
+                    </div>
+                    <button onClick={onClose} className="text-sm font-bold" data-testid="categories-close">✕</button>
+                </div>
+
+                <div className="hard-border bg-[#FFF3E7] p-4 mb-4">
+                    <div className="text-[10px] uppercase tracking-widest font-extrabold mb-3">Add new</div>
+                    <div className="grid grid-cols-6 gap-2">
+                        <input value={emoji} onChange={(e) => setEmoji(e.target.value)} maxLength={2} className="col-span-1 px-2 py-2 hard-border bg-white text-center text-xl" data-testid="cat-emoji-input" />
+                        <input value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Signature Burgers" className="col-span-3 px-3 py-2 hard-border bg-white" data-testid="cat-name-input" />
+                        <select value={kind} onChange={(e) => setKind(e.target.value)} className="col-span-2 px-2 py-2 hard-border bg-white" data-testid="cat-kind-select">
+                            {KINDS.map(k => <option key={k.k} value={k.k}>{k.label}</option>)}
+                        </select>
+                    </div>
+                    <button onClick={create} disabled={saving || !name.trim()} className="brand-btn w-full mt-3 py-2.5 text-sm" data-testid="cat-add-btn">
+                        {saving ? "Adding…" : "Add category +"}
+                    </button>
+                </div>
+
+                <div className="flex-1 overflow-y-auto scroll-thin">
+                    <div className="text-[10px] uppercase tracking-widest font-extrabold mb-2">Existing ({categories.length})</div>
+                    {categories.length === 0 ? (
+                        <div className="text-sm text-gray-500 py-6 text-center">No categories yet — add your first above.</div>
+                    ) : (
+                        <div className="space-y-2">
+                            {categories.map((c) => (
+                                <div key={c.id} className="flex items-center gap-3 hard-border bg-white p-3" data-testid={`cat-row-${c.id}`}>
+                                    <div className="text-2xl">{c.emoji || "🍽️"}</div>
+                                    <div className="flex-1 min-w-0">
+                                        <div className="font-display text-xl truncate">{c.name}</div>
+                                        <div className="text-[10px] uppercase tracking-widest text-gray-500 font-bold">{c.kind}</div>
+                                    </div>
+                                    <button onClick={() => del(c)} className="w-9 h-9 grid place-items-center hover:bg-red-100 transition-colors border-2 border-black" data-testid={`cat-del-${c.id}`}>
+                                        <Trash size={14} />
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+
+                <div className="mt-5 flex justify-end">
+                    <button onClick={onClose} className="pill-btn px-5 py-2.5 text-sm" data-testid="categories-done-btn">Done</button>
+                </div>
+            </div>
         </div>
     );
 }
@@ -367,7 +484,7 @@ function VideoUploadModal({ dish, onClose, onDone }) {
     );
 }
 
-function NewDishModal({ categories, onClose, onDone }) {
+function NewDishModal({ categories, onClose, onDone, onManageCategories }) {
     const [f, setF] = useState({ name: "", description: "", price: 10, category_id: categories[0]?.id || "", image_url: "", is_signature: false });
     const [saving, setSaving] = useState(false);
     async function save() {
@@ -379,6 +496,7 @@ function NewDishModal({ categories, onClose, onDone }) {
             onDone();
         } catch (e) { toast.error(formatApiError(e)); } finally { setSaving(false); }
     }
+    const noCategories = categories.length === 0;
     return (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" data-testid="new-dish-modal">
             <div className="bg-white hard-border hard-shadow-lg w-full max-w-lg p-6">
@@ -386,34 +504,47 @@ function NewDishModal({ categories, onClose, onDone }) {
                     <div className="font-display text-3xl">New dish</div>
                     <button onClick={onClose} className="text-sm font-bold" data-testid="close-new-dish-modal">✕</button>
                 </div>
-                <div className="grid grid-cols-2 gap-4 mt-4">
-                    <label className="col-span-2 block">
-                        <span className="text-[10px] uppercase tracking-widest font-extrabold">Name</span>
-                        <input value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} className="mt-1 w-full px-3 py-2 hard-border bg-white" data-testid="new-dish-name" />
-                    </label>
-                    <label className="block">
-                        <span className="text-[10px] uppercase tracking-widest font-extrabold">Category</span>
-                        <select value={f.category_id} onChange={(e) => setF({ ...f, category_id: e.target.value })} className="mt-1 w-full px-3 py-2 hard-border bg-white" data-testid="new-dish-category">
-                            {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
-                        </select>
-                    </label>
-                    <label className="block">
-                        <span className="text-[10px] uppercase tracking-widest font-extrabold">Price ($)</span>
-                        <input type="number" step="0.01" value={f.price} onChange={(e) => setF({ ...f, price: e.target.value })} className="mt-1 w-full px-3 py-2 hard-border bg-white" data-testid="new-dish-price" />
-                    </label>
-                    <label className="col-span-2 block">
-                        <span className="text-[10px] uppercase tracking-widest font-extrabold">Image URL</span>
-                        <input value={f.image_url} onChange={(e) => setF({ ...f, image_url: e.target.value })} className="mt-1 w-full px-3 py-2 hard-border bg-white" data-testid="new-dish-image" />
-                    </label>
-                    <label className="col-span-2 block">
-                        <span className="text-[10px] uppercase tracking-widest font-extrabold">Description</span>
-                        <textarea value={f.description} onChange={(e) => setF({ ...f, description: e.target.value })} className="mt-1 w-full px-3 py-2 hard-border bg-white" rows={3} data-testid="new-dish-desc" />
-                    </label>
-                </div>
-                <div className="mt-6 flex justify-end gap-3">
-                    <button onClick={onClose} className="ghost-btn px-4 py-3 text-sm">Cancel</button>
-                    <button onClick={save} disabled={saving || !f.name} className="brand-btn px-4 py-3 text-sm" data-testid="new-dish-save">{saving ? "Saving…" : "Save dish"}</button>
-                </div>
+                {noCategories ? (
+                    <div className="mt-6 hard-border bg-[#FFF3E7] p-5 text-center" data-testid="new-dish-no-cats">
+                        <Warning size={32} weight="bold" className="mx-auto text-[#FC8019]" />
+                        <div className="font-display text-2xl mt-2">No categories yet</div>
+                        <div className="text-sm text-gray-700 mt-1">Create at least one category (e.g. "Burgers") before adding dishes.</div>
+                        <button onClick={onManageCategories} className="brand-btn mt-5 px-5 py-3 text-sm" data-testid="new-dish-goto-cats">
+                            Create categories →
+                        </button>
+                    </div>
+                ) : (
+                    <>
+                        <div className="grid grid-cols-2 gap-4 mt-4">
+                            <label className="col-span-2 block">
+                                <span className="text-[10px] uppercase tracking-widest font-extrabold">Name</span>
+                                <input value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} className="mt-1 w-full px-3 py-2 hard-border bg-white" data-testid="new-dish-name" />
+                            </label>
+                            <label className="block">
+                                <span className="text-[10px] uppercase tracking-widest font-extrabold">Category</span>
+                                <select value={f.category_id} onChange={(e) => setF({ ...f, category_id: e.target.value })} className="mt-1 w-full px-3 py-2 hard-border bg-white" data-testid="new-dish-category">
+                                    {categories.map((c) => <option key={c.id} value={c.id}>{c.emoji ? c.emoji + " " : ""}{c.name}</option>)}
+                                </select>
+                            </label>
+                            <label className="block">
+                                <span className="text-[10px] uppercase tracking-widest font-extrabold">Price ($)</span>
+                                <input type="number" step="0.01" value={f.price} onChange={(e) => setF({ ...f, price: e.target.value })} className="mt-1 w-full px-3 py-2 hard-border bg-white" data-testid="new-dish-price" />
+                            </label>
+                            <label className="col-span-2 block">
+                                <span className="text-[10px] uppercase tracking-widest font-extrabold">Image URL</span>
+                                <input value={f.image_url} onChange={(e) => setF({ ...f, image_url: e.target.value })} className="mt-1 w-full px-3 py-2 hard-border bg-white" data-testid="new-dish-image" />
+                            </label>
+                            <label className="col-span-2 block">
+                                <span className="text-[10px] uppercase tracking-widest font-extrabold">Description</span>
+                                <textarea value={f.description} onChange={(e) => setF({ ...f, description: e.target.value })} className="mt-1 w-full px-3 py-2 hard-border bg-white" rows={3} data-testid="new-dish-desc" />
+                            </label>
+                        </div>
+                        <div className="mt-6 flex justify-end gap-3">
+                            <button onClick={onClose} className="ghost-btn px-4 py-3 text-sm">Cancel</button>
+                            <button onClick={save} disabled={saving || !f.name} className="brand-btn px-4 py-3 text-sm" data-testid="new-dish-save">{saving ? "Saving…" : "Save dish"}</button>
+                        </div>
+                    </>
+                )}
             </div>
         </div>
     );

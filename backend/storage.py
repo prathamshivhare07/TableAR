@@ -1,88 +1,51 @@
-"""Pluggable object storage for Tabler.AR.
+"""Pluggable object storage for Tabler.AR — zero Emergent dependency.
 
 Backends:
-  - `emergent` (default) — Emergent-managed object storage, works only inside Emergent.
-  - `s3`                 — Any S3-compatible provider: AWS S3, Cloudflare R2,
-                           Backblaze B2, MinIO, DigitalOcean Spaces, Supabase Storage.
+  - `local` (default) — Local filesystem. Great for dev, single-VPS deploys, or a
+                        mounted persistent volume on Railway/Fly.io/Render.
+  - `s3`              — Any S3-compatible provider: AWS S3, Cloudflare R2,
+                        Backblaze B2, DigitalOcean Spaces, MinIO, Supabase Storage.
 
-Select the backend with the env var `STORAGE_PROVIDER=emergent|s3`.
-
-For manual/self-hosted deployments, use `s3` and set:
-  STORAGE_PROVIDER=s3
-  S3_BUCKET=<bucket-name>
-  S3_ENDPOINT_URL=<optional; omit for AWS S3, set for R2/MinIO/etc.>
-  S3_REGION=us-east-1
-  S3_ACCESS_KEY_ID=<...>
-  S3_SECRET_ACCESS_KEY=<...>
-  S3_PUBLIC_URL_BASE=<optional; e.g. https://cdn.example.com or R2 public URL>
+Select with `STORAGE_PROVIDER=local|s3`.
 """
 import os
 import logging
-import requests
 
 log = logging.getLogger("storage")
 
 APP_NAME = os.environ.get("APP_NAME", "tabler-ar")
-PROVIDER = os.environ.get("STORAGE_PROVIDER", "emergent").lower()
+PROVIDER = os.environ.get("STORAGE_PROVIDER", "local").lower()
+LOCAL_ROOT = os.environ.get("LOCAL_STORAGE_DIR", os.path.join(os.path.dirname(__file__), "uploads"))
+
 
 # =========================================================
-# Emergent backend
+# Local filesystem backend
 # =========================================================
-_EMERGENT_URL = "https://integrations.emergentagent.com/objstore/api/v1/storage"
-_emergent_key: str | None = None
+def _local_full(path: str) -> str:
+    # sanity: prevent absolute paths / directory escapes
+    safe = path.replace("\\", "/").lstrip("/")
+    if ".." in safe.split("/"):
+        raise ValueError("invalid storage path")
+    return os.path.join(LOCAL_ROOT, safe)
 
 
-def _emergent_get_key() -> str:
-    global _emergent_key
-    if _emergent_key:
-        return _emergent_key
-    key = os.environ.get("EMERGENT_LLM_KEY")
-    if not key:
-        raise RuntimeError("EMERGENT_LLM_KEY missing (required for STORAGE_PROVIDER=emergent)")
-    resp = requests.post(f"{_EMERGENT_URL}/init", json={"emergent_key": key}, timeout=30)
-    resp.raise_for_status()
-    _emergent_key = resp.json()["storage_key"]
-    return _emergent_key
+def _local_put(path: str, data: bytes, ctype: str) -> dict:
+    full = _local_full(path)
+    os.makedirs(os.path.dirname(full), exist_ok=True)
+    with open(full, "wb") as f:
+        f.write(data)
+    return {"path": path, "size": len(data)}
 
 
-def _emergent_reset() -> None:
-    global _emergent_key
-    _emergent_key = None
+def _local_get(path: str) -> tuple[bytes, str]:
+    full = _local_full(path)
+    with open(full, "rb") as f:
+        return f.read(), "application/octet-stream"  # actual ctype comes from db.files
 
 
-def _emergent_put(path: str, data: bytes, ctype: str) -> dict:
-    def _do():
-        return requests.put(
-            f"{_EMERGENT_URL}/objects/{path}",
-            headers={"X-Storage-Key": _emergent_get_key(), "Content-Type": ctype},
-            data=data,
-            timeout=180,
-        )
-    r = _do()
-    if r.status_code == 403:
-        _emergent_reset()
-        r = _do()
-    r.raise_for_status()
-    return r.json()
-
-
-def _emergent_get(path: str) -> tuple[bytes, str]:
-    def _do():
-        return requests.get(
-            f"{_EMERGENT_URL}/objects/{path}",
-            headers={"X-Storage-Key": _emergent_get_key()},
-            timeout=180,
-        )
-    r = _do()
-    if r.status_code == 403:
-        _emergent_reset()
-        r = _do()
-    r.raise_for_status()
-    return r.content, r.headers.get("Content-Type", "application/octet-stream")
-
-
-def _emergent_init() -> None:
-    _emergent_get_key()
+def _local_init() -> None:
+    os.makedirs(LOCAL_ROOT, exist_ok=True)
+    log.info("Local storage root: %s", LOCAL_ROOT)
 
 
 # =========================================================
@@ -95,10 +58,9 @@ def _s3():
     global _s3_client
     if _s3_client is not None:
         return _s3_client
-    import boto3  # local import so users without boto3 aren't forced to install it
+    import boto3
 
-    bucket = os.environ.get("S3_BUCKET")
-    if not bucket:
+    if not os.environ.get("S3_BUCKET"):
         raise RuntimeError("S3_BUCKET missing (required for STORAGE_PROVIDER=s3)")
 
     kwargs = {
@@ -129,7 +91,6 @@ def _s3_get(path: str) -> tuple[bytes, str]:
 
 
 def _s3_init() -> None:
-    # Ping the bucket to fail fast on misconfiguration
     _s3().head_bucket(Bucket=_s3_bucket())
 
 
@@ -137,28 +98,25 @@ def _s3_init() -> None:
 # Public dispatch API
 # =========================================================
 def init_storage() -> None:
-    """Call once at startup; raises on failure."""
-    if PROVIDER == "emergent":
-        _emergent_init()
+    if PROVIDER == "local":
+        _local_init()
     elif PROVIDER == "s3":
         _s3_init()
     else:
-        raise RuntimeError(f"Unknown STORAGE_PROVIDER={PROVIDER}")
+        raise RuntimeError(f"Unknown STORAGE_PROVIDER={PROVIDER}. Use 'local' or 's3'.")
     log.info("Storage initialised (provider=%s)", PROVIDER)
 
 
 def put_object(path: str, data: bytes, content_type: str) -> dict:
-    """Upload bytes to storage. Returns dict with at least {"path": str, "size": int}."""
-    if PROVIDER == "emergent":
-        return _emergent_put(path, data, content_type)
-    return _s3_put(path, data, content_type)
+    if PROVIDER == "s3":
+        return _s3_put(path, data, content_type)
+    return _local_put(path, data, content_type)
 
 
 def get_object(path: str) -> tuple[bytes, str]:
-    """Download bytes from storage. Returns (data, content_type)."""
-    if PROVIDER == "emergent":
-        return _emergent_get(path)
-    return _s3_get(path)
+    if PROVIDER == "s3":
+        return _s3_get(path)
+    return _local_get(path)
 
 
 MIME = {

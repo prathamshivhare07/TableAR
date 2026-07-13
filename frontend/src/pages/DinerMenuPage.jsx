@@ -1,8 +1,8 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import axios from "axios";
 import { toast } from "sonner";
-import { ShoppingBag, X, Minus, Plus, Cube, ArrowLeft, MapPin, CheckCircle, ForkKnife } from "@phosphor-icons/react";
+import { ShoppingBag, X, Minus, Plus, Cube, ArrowLeft, MapPin, CheckCircle, ForkKnife, VideoCamera, ArrowsClockwise } from "@phosphor-icons/react";
 import { API } from "../lib/api";
 import ModelViewer from "../components/ModelViewer";
 
@@ -148,7 +148,7 @@ export default function DinerMenuPage() {
                                 <div className="flex gap-2">
                                     {d.model_status === "ready" && d.model_url && (
                                         <button onClick={() => setDetail(d)} className="ghost-btn px-3 py-1.5 text-[11px] inline-flex items-center gap-1" data-testid={`diner-preview-${d.id}`}>
-                                            <Cube size={12} /> Preview
+                                            <VideoCamera size={12} weight="bold" /> AR View
                                         </button>
                                     )}
                                     <button onClick={() => addToCart(d)} className="pill-orange px-4 py-1.5 text-xs" data-testid={`diner-add-${d.id}`}>Add +</button>
@@ -221,7 +221,7 @@ export default function DinerMenuPage() {
             )}
 
             {/* Dish detail with WebAR */}
-            {detail && <DishDetailSheet dish={detail} onClose={() => setDetail(null)} onAdd={(d) => { addToCart(d); setDetail(null); }} />}
+            {detail && <ARPreviewSheet dish={detail} onClose={() => setDetail(null)} onAdd={(d) => { addToCart(d); setDetail(null); }} />}
 
             {/* Order placed */}
             {placed && <OrderPlacedSheet order={placed} onClose={() => setPlaced(null)} />}
@@ -246,29 +246,133 @@ function CatPill({ active, onClick, label, testId }) {
     );
 }
 
-function DishDetailSheet({ dish, onClose, onAdd }) {
+function ARPreviewSheet({ dish, onClose, onAdd }) {
+    const videoRef = useRef(null);
+    const [camState, setCamState] = useState("loading"); // loading | live | denied | unsupported
+    const [facing, setFacing] = useState("environment");
+
+    useEffect(() => {
+        let stream = null;
+        let cancelled = false;
+        async function start() {
+            if (!navigator.mediaDevices?.getUserMedia) {
+                setCamState("unsupported");
+                return;
+            }
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: facing },
+                    audio: false,
+                });
+                if (cancelled) {
+                    stream.getTracks().forEach((t) => t.stop());
+                    return;
+                }
+                if (videoRef.current) {
+                    videoRef.current.srcObject = stream;
+                    await videoRef.current.play().catch(() => {});
+                }
+                setCamState("live");
+            } catch {
+                setCamState("denied");
+            }
+        }
+        start();
+        return () => {
+            cancelled = true;
+            if (stream) stream.getTracks().forEach((t) => t.stop());
+        };
+    }, [facing]);
+
+    function flip() {
+        setCamState("loading");
+        setFacing((f) => (f === "environment" ? "user" : "environment"));
+    }
+
     return (
-        <div className="fixed inset-0 z-50 bg-black/50 flex items-end md:items-center justify-center" onClick={onClose} data-testid="dish-detail-sheet">
-            <div className="w-full max-w-2xl bg-white max-h-[92vh] rounded-t-3xl md:rounded-3xl overflow-hidden hard-border flex flex-col" onClick={(e) => e.stopPropagation()}>
-                <div className="relative bg-[#FFF3E7]" style={{ height: "58vh" }}>
-                    <ModelViewer src={dish.model_url} iosSrc={dish.model_usdz_url} className="w-full h-full" />
-                    <button onClick={onClose} className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white hard-border grid place-items-center" data-testid="dish-detail-close">
-                        <X size={18} />
-                    </button>
-                    <div className="absolute top-4 left-4 flex flex-col gap-2">
-                        <span className="tag bg-[#FC8019] text-white border-black"><Cube size={12} weight="bold" /> 1:1 WebAR</span>
-                        <span className="tag">Pinch to zoom · Drag to rotate</span>
-                    </div>
+        <div className="fixed inset-0 z-50 bg-black" data-testid="ar-preview-sheet">
+            {/* Camera background */}
+            <video
+                ref={videoRef}
+                autoPlay
+                muted
+                playsInline
+                className={`absolute inset-0 w-full h-full object-cover ${camState === "live" ? "" : "opacity-40"}`}
+                data-testid="ar-camera-video"
+            />
+            {camState !== "live" && (
+                <div className="absolute inset-0 bg-gradient-to-br from-[#FFF3E7] via-[#FFE9D0] to-[#FDD1A6]" />
+            )}
+
+            {/* 3D model overlaid, transparent background */}
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <div className="w-full h-full pointer-events-auto" data-testid="ar-model-container">
+                    <ModelViewer
+                        src={dish.model_url}
+                        iosSrc={dish.model_usdz_url}
+                        className="w-full h-full"
+                        style={{ background: "transparent" }}
+                    />
                 </div>
-                <div className="p-5">
-                    <div className="flex items-start justify-between gap-4">
-                        <div>
-                            <div className="font-display text-3xl">{dish.name}</div>
-                            <div className="text-sm text-gray-600 mt-1">{dish.description}</div>
+            </div>
+
+            {/* Top overlay */}
+            <div className="absolute top-0 inset-x-0 p-4 flex justify-between items-start pointer-events-none">
+                <button
+                    onClick={onClose}
+                    className="w-11 h-11 rounded-full bg-white hard-border grid place-items-center pointer-events-auto"
+                    data-testid="ar-close-btn"
+                >
+                    <X size={20} weight="bold" />
+                </button>
+                <div className="flex flex-col gap-2 items-end pointer-events-none">
+                    <span className={`tag ${camState === "live" ? "bg-[#FC8019] text-white border-black" : "bg-white"}`} data-testid="ar-status-tag">
+                        <VideoCamera size={12} weight="bold" />
+                        {camState === "loading" && "Starting camera…"}
+                        {camState === "live" && "LIVE AR"}
+                        {camState === "denied" && "Camera off"}
+                        {camState === "unsupported" && "3D only"}
+                    </span>
+                    {camState === "live" && (
+                        <button
+                            onClick={flip}
+                            className="tag bg-white pointer-events-auto"
+                            data-testid="ar-flip-btn"
+                        >
+                            <ArrowsClockwise size={12} weight="bold" /> Flip
+                        </button>
+                    )}
+                </div>
+            </div>
+
+            {/* Instructions */}
+            {camState === "live" && (
+                <div className="absolute top-24 inset-x-0 flex justify-center pointer-events-none">
+                    <span className="tag bg-black/70 text-white border-white/30 backdrop-blur">
+                        Point at your table · Drag to rotate · Pinch to zoom
+                    </span>
+                </div>
+            )}
+            {camState === "denied" && (
+                <div className="absolute top-24 inset-x-0 flex justify-center pointer-events-none px-4">
+                    <span className="tag bg-black/80 text-white border-white/30 backdrop-blur text-center max-w-xs">
+                        Allow camera to see this dish on your table
+                    </span>
+                </div>
+            )}
+
+            {/* Bottom card */}
+            <div className="absolute bottom-0 inset-x-0 p-4">
+                <div className="bg-white hard-border p-4 max-w-xl mx-auto">
+                    <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                            <div className="text-[10px] uppercase tracking-widest font-extrabold text-[#FC8019]">Preview</div>
+                            <div className="font-display text-2xl truncate">{dish.name}</div>
+                            {dish.description && <div className="text-xs text-gray-600 line-clamp-2 mt-1">{dish.description}</div>}
                         </div>
-                        <div className="font-display text-3xl text-[#FC8019]">${dish.price.toFixed(2)}</div>
+                        <div className="font-display text-2xl text-[#FC8019] whitespace-nowrap">${dish.price.toFixed(2)}</div>
                     </div>
-                    <button onClick={() => onAdd(dish)} className="mt-6 brand-btn w-full py-4" data-testid="dish-detail-add-btn">
+                    <button onClick={() => onAdd(dish)} className="mt-3 brand-btn w-full py-3" data-testid="ar-add-cart-btn">
                         Add to cart →
                     </button>
                 </div>

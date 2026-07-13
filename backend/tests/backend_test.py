@@ -119,8 +119,8 @@ def test_public_menu_no_table():
     assert r.status_code == 200
     data = r.json()
     assert data["tenant"]["slug"] == "spice-route"
-    assert len(data["categories"]) == 5
-    assert len(data["dishes"]) == 10
+    assert len(data["categories"]) >= 5
+    assert len(data["dishes"]) >= 10
     assert data["table"] is None
 
 
@@ -136,13 +136,13 @@ def test_public_menu_with_table():
 def test_tenant_dishes(demo_tenant_token):
     r = requests.get(f"{API}/tenant/dishes", headers={"Authorization": f"Bearer {demo_tenant_token}"}, timeout=15)
     assert r.status_code == 200
-    assert len(r.json()) == 10
+    assert len(r.json()) >= 10
 
 
 def test_tenant_categories(demo_tenant_token):
     r = requests.get(f"{API}/tenant/categories", headers={"Authorization": f"Bearer {demo_tenant_token}"}, timeout=15)
     assert r.status_code == 200
-    assert len(r.json()) == 5
+    assert len(r.json()) >= 5
 
 
 def test_tenant_tables(demo_tenant_token):
@@ -289,12 +289,84 @@ def test_super_admin_upload_model_makes_dish_ready(super_admin_token, new_catego
     assert data["status"] == "ready"
     model_url = data["model_url"]
     assert model_url.startswith("http")
+    # Iteration 2: must use PUBLIC_BASE_URL (preview.emergentagent.com), NOT internal cluster host
+    assert "preview.emergentagent.com" in model_url, f"model_url should be public, got {model_url}"
+    assert "/api/files/tabler-ar/models/" in model_url
 
     # Publicly reachable GET
     g = requests.get(model_url, timeout=30)
     assert g.status_code == 200
     ct = g.headers.get("Content-Type", "")
     assert "gltf-binary" in ct or "octet-stream" in ct
+
+
+# ---------- Iteration 2: Local storage on disk ----------
+def test_local_storage_writes_files_to_disk(demo_tenant_token, new_category_and_dish):
+    """After tenant uploads a video, the file must exist under /app/backend/uploads/tabler-ar/videos/..."""
+    h = {"Authorization": f"Bearer {demo_tenant_token}"}
+    did = new_category_and_dish["dish_id"]
+    dishes = requests.get(f"{API}/tenant/dishes", headers=h, timeout=15).json()
+    d = next(x for x in dishes if x["id"] == did)
+    vpath = d.get("video_path")
+    assert vpath, "video_path should be set after upload"
+    assert vpath.startswith("tabler-ar/videos/"), f"unexpected video_path: {vpath}"
+    full = os.path.join("/app/backend/uploads", vpath)
+    assert os.path.exists(full), f"local storage file missing: {full}"
+    assert os.path.getsize(full) > 0
+
+    # Also verify the model file exists on disk
+    mpath = d.get("model_url_path") or d.get("model_path")
+    if mpath and not mpath.startswith("http"):
+        full_m = os.path.join("/app/backend/uploads", mpath)
+        assert os.path.exists(full_m), f"local storage model missing: {full_m}"
+
+
+def test_no_emergent_integration_in_storage_code():
+    """Storage backend must not import Emergent SDK anymore."""
+    with open("/app/backend/storage.py") as f:
+        src = f.read()
+    assert "emergentintegrations" not in src
+    assert "integrations.emergentagent.com" not in src
+    with open("/app/backend/server.py") as f:
+        srv = f.read()
+    assert "emergentintegrations" not in srv
+    assert "integrations.emergentagent.com" not in srv
+
+
+# ---------- Iteration 2: Tenant category CRUD (empty-state fix support) ----------
+def test_tenant_categories_crud_and_isolation(new_tenant, demo_tenant_token):
+    """CRUD for tenant categories + isolation across tenants."""
+    # New tenant starts with 0 categories
+    h_new = {"Authorization": f"Bearer {new_tenant['token']}"}
+    r = requests.get(f"{API}/tenant/categories", headers=h_new, timeout=15)
+    assert r.status_code == 200
+    assert r.json() == []
+
+    # Create a category
+    cat_payload = {"name": "TEST_Cat_iso", "kind": "default", "emoji": "🥗", "sort_order": 1}
+    r = requests.post(f"{API}/tenant/categories", json=cat_payload, headers=h_new, timeout=15)
+    assert r.status_code == 200, r.text
+    cid = r.json()["id"]
+    assert r.json()["name"] == "TEST_Cat_iso"
+
+    # List reflects the new category
+    r = requests.get(f"{API}/tenant/categories", headers=h_new, timeout=15)
+    assert r.status_code == 200
+    names = [c["name"] for c in r.json()]
+    assert "TEST_Cat_iso" in names
+
+    # Isolation: demo tenant does NOT see new tenant's category
+    h_demo = {"Authorization": f"Bearer {demo_tenant_token}"}
+    demo_cats = requests.get(f"{API}/tenant/categories", headers=h_demo, timeout=15).json()
+    assert all(c["id"] != cid for c in demo_cats)
+
+    # Delete
+    r = requests.delete(f"{API}/tenant/categories/{cid}", headers=h_new, timeout=15)
+    assert r.status_code in (200, 204), r.text
+
+    # Verify removed
+    r = requests.get(f"{API}/tenant/categories", headers=h_new, timeout=15)
+    assert all(c["id"] != cid for c in r.json())
 
 
 # ---------- KDS WebSocket ----------

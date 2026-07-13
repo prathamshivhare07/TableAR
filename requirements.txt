@@ -6,3 +6,4 @@ pyee==13.0.1
 typing_extensions==4.16.0
 fastapi
 uvicorn[standard]
+bcrypt

@@ -41,7 +41,7 @@ export default function SuperAdminPage() {
         if (user === undefined) return;
         if (!user || user.role !== "super_admin") { nav("/login"); return; }
         reload();
-    }, [user]);
+    }, [user, nav]);
 
     return (
         <div className="min-h-screen bg-[#F9F8F6]" data-testid="superadmin-page">

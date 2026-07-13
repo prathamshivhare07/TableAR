@@ -106,7 +106,8 @@ Backend (`backend/.env`):
 | `DB_NAME` | yes | Database name |
 | `JWT_SECRET` | yes | 64-char random hex |
 | `ADMIN_EMAIL`, `ADMIN_PASSWORD` | yes | Super admin seed |
-| `DEMO_TENANT_EMAIL`, `DEMO_TENANT_PASSWORD` | optional | Seed the demo restaurant |
+| `DEMO_TENANT_EMAIL`, `DEMO_TENANT_PASSWORD` | optional | Demo tenant credentials (defaults to `demo@spice.co` / `demo123`) |
+| `SEED_DEMO_TENANT` | optional | `true` (default) to seed demo tenant, `false` to skip |
 | `PUBLIC_BASE_URL` | recommended | Public HTTPS URL of the backend (used for file URLs) |
 | `STORAGE_PROVIDER` | yes | `emergent` or `s3` |
 | `EMERGENT_LLM_KEY` | if `emergent` | From Emergent dashboard |

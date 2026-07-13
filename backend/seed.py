@@ -1,9 +1,24 @@
 """Seed demo tenant, users, tables, categories, dishes for the WebAR ordering demo."""
 import os
 import uuid
+import logging
 from datetime import datetime, timezone
 
 from backend.auth import hash_password, verify_password
+
+log = logging.getLogger("tabler.seed")
+
+DEFAULT_ADMIN_EMAIL = "admin@tabler.ar"
+DEFAULT_ADMIN_PASSWORD = "admin123"
+DEFAULT_DEMO_EMAIL = "demo@spice.co"
+DEFAULT_DEMO_PASSWORD = "demo123"
+
+
+def _env_str(name: str, default: str | None = None) -> str | None:
+    val = os.environ.get(name, default)
+    if val is None:
+        return None
+    return val.strip()
 
 # 3D model pool — used by the stub video->3D pipeline to assign a realistic sample.
 SAMPLE_GLBS = {
@@ -26,10 +41,14 @@ def new_id() -> str:
 
 async def seed_all(db) -> None:
     await _ensure_indexes(db)
-    await _seed_super_admin(db)
-    tenant_id = await _seed_demo_tenant(db)
-    await _seed_demo_menu(db, tenant_id)
-    await _write_test_creds()
+    admin_email, admin_password = await _seed_super_admin(db)
+    demo_creds = await _seed_demo_tenant(db)
+    if demo_creds:
+        tenant_id, demo_email, demo_password = demo_creds
+        await _seed_demo_menu(db, tenant_id)
+    else:
+        demo_email, demo_password = None, None
+    await _write_test_creds(admin_email, admin_password, demo_email, demo_password)
 
 
 async def _ensure_indexes(db) -> None:
@@ -40,9 +59,9 @@ async def _ensure_indexes(db) -> None:
     await db.tables.create_index([("tenant_id", 1), ("code", 1)], unique=True)
 
 
-async def _seed_super_admin(db) -> None:
-    email = os.environ["ADMIN_EMAIL"].lower()
-    password = os.environ["ADMIN_PASSWORD"]
+async def _seed_super_admin(db) -> tuple[str, str]:
+    email = (_env_str("ADMIN_EMAIL", DEFAULT_ADMIN_EMAIL) or DEFAULT_ADMIN_EMAIL).lower()
+    password = _env_str("ADMIN_PASSWORD", DEFAULT_ADMIN_PASSWORD) or DEFAULT_ADMIN_PASSWORD
     existing = await db.users.find_one({"email": email})
     if existing is None:
         await db.users.insert_one({
@@ -56,9 +75,15 @@ async def _seed_super_admin(db) -> None:
         })
     elif not verify_password(password, existing["password_hash"]):
         await db.users.update_one({"email": email}, {"$set": {"password_hash": hash_password(password)}})
+    return email, password
 
 
-async def _seed_demo_tenant(db) -> str:
+async def _seed_demo_tenant(db) -> tuple[str, str, str] | None:
+    seed_demo = (_env_str("SEED_DEMO_TENANT", "true") or "true").lower() in ("1", "true", "yes", "y", "on")
+    if not seed_demo:
+        log.info("Skipping demo tenant seed (SEED_DEMO_TENANT=false)")
+        return None
+
     slug = "spice-route"
     tenant = await db.tenants.find_one({"slug": slug})
     if tenant is None:
@@ -78,8 +103,8 @@ async def _seed_demo_tenant(db) -> str:
     else:
         tenant_id = tenant["id"]
 
-    email = os.environ["DEMO_TENANT_EMAIL"].lower()
-    password = os.environ["DEMO_TENANT_PASSWORD"]
+    email = (_env_str("DEMO_TENANT_EMAIL", DEFAULT_DEMO_EMAIL) or DEFAULT_DEMO_EMAIL).lower()
+    password = _env_str("DEMO_TENANT_PASSWORD", DEFAULT_DEMO_PASSWORD) or DEFAULT_DEMO_PASSWORD
     existing = await db.users.find_one({"email": email})
     if existing is None:
         await db.users.insert_one({
@@ -106,7 +131,7 @@ async def _seed_demo_tenant(db) -> str:
                 "seats": 4 if i <= 4 else 2,
                 "created_at": now_iso(),
             })
-    return tenant_id
+    return tenant_id, email, password
 
 
 async def _seed_demo_menu(db, tenant_id: str) -> None:
@@ -164,19 +189,28 @@ async def _seed_demo_menu(db, tenant_id: str) -> None:
         })
 
 
-async def _write_test_creds() -> None:
+async def _write_test_creds(
+    admin_email: str,
+    admin_password: str,
+    demo_email: str | None,
+    demo_password: str | None,
+) -> None:
+    demo_section = "" if not (demo_email and demo_password) else f"""
+## Demo Merchant (restaurant tenant admin)
+- Email: `{demo_email}`
+- Password: `{demo_password}`
+- Role: `tenant_admin`
+- Tenant slug: `spice-route`
+"""
+
     content = f"""# Test Credentials (Tabler AR)
 
 ## Super Admin (platform owner)
-- Email: `{os.environ['ADMIN_EMAIL']}`
-- Password: `{os.environ['ADMIN_PASSWORD']}`
+- Email: `{admin_email}`
+- Password: `{admin_password}`
 - Role: `super_admin`
 
-## Demo Merchant (restaurant tenant admin)
-- Email: `{os.environ['DEMO_TENANT_EMAIL']}`
-- Password: `{os.environ['DEMO_TENANT_PASSWORD']}`
-- Role: `tenant_admin`
-- Tenant slug: `spice-route`
+{demo_section}
 
 ## Auth endpoints
 - POST `/api/auth/register` — creates new tenant + tenant_admin

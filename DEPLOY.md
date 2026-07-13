@@ -50,7 +50,8 @@ DB_NAME="tabler_ar"
 JWT_SECRET="$(python -c 'import secrets;print(secrets.token_hex(32))')"
 ADMIN_EMAIL="you@your-domain.com"
 ADMIN_PASSWORD="<strong-password>"
-# You can remove DEMO_TENANT_* if you don't want the seed demo restaurant.
+# Optional: set false if you don't want the seed demo restaurant.
+SEED_DEMO_TENANT="true"
 DEMO_TENANT_EMAIL="demo@example.com"
 DEMO_TENANT_PASSWORD="demo123"
 
@@ -124,7 +125,7 @@ Serve `frontend/build/` from any static host:
 ## 6. Optional hardening for production
 
 - **Change** `ADMIN_PASSWORD` (or remove seed and create your admin via a one-off script).
-- **Remove** `DEMO_TENANT_*` env vars to skip seeding the demo restaurant.
+- **Set** `SEED_DEMO_TENANT=false` to skip seeding the demo restaurant.
 - **Set** `CORS_ORIGINS` to your explicit frontend origin (currently defaults to `*`).
 - **Add** brute-force / rate-limiting middleware on `/api/auth/login` (e.g. `slowapi`).
 - **Run** MongoDB with authentication + TLS.

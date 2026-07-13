@@ -26,7 +26,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 from pydantic import BaseModel, EmailStr, Field
 
-from auth import (
+from backend.auth import (
     hash_password, verify_password, create_access_token, decode_token,
     get_current_user, set_auth_cookie, clear_auth_cookie,
 )

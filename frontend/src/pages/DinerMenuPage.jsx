@@ -245,52 +245,86 @@ function CatPill({ active, onClick, label, testId }) {
         </button>
     );
 }
-
 function ARPreviewSheet({ dish, onClose, onAdd }) {
-    const videoRef = useRef(null);
     const modelViewerRef = useRef(null);
-    const [camState, setCamState] = useState("loading"); // loading | live | denied | unsupported
-    const [facing, setFacing] = useState("environment");
-
-    useEffect(() => {
-        let stream = null;
-        let cancelled = false;
-        async function start() {
-            if (!navigator.mediaDevices?.getUserMedia) {
-                setCamState("unsupported");
-                return;
-            }
-            try {
-                stream = await navigator.mediaDevices.getUserMedia({
-                    video: { facingMode: facing },
-                    audio: false,
-                });
-                if (cancelled) {
-                    stream.getTracks().forEach((t) => t.stop());
-                    return;
-                }
-                if (videoRef.current) {
-                    videoRef.current.srcObject = stream;
-                    await videoRef.current.play().catch(() => {});
-                }
-                setCamState("live");
-            } catch {
-                setCamState("denied");
-            }
-        }
-        start();
-        return () => {
-            cancelled = true;
-            if (stream) stream.getTracks().forEach((t) => t.stop());
-        };
-    }, [facing]);
 
     function startAR() {
-    if (modelViewerRef.current?.activateAR) {
-        modelViewerRef.current.activateAR();
-    } else {
-        console.log("AR not available yet");
+        if (modelViewerRef.current && typeof modelViewerRef.current.activateAR === 'function') {
+            modelViewerRef.current.activateAR();
+        } else {
+            console.log("AR engine not ready or unsupported on this device");
+        }
     }
+
+    return (
+        <div className="fixed inset-0 z-50 bg-[#FFF3E7]" data-testid="ar-preview-sheet">
+            
+            {/* 3D Model Window (Gives the canvas room to breathe above the card) */}
+            <div className="absolute inset-x-0 top-0 bottom-64 flex items-center justify-center">
+                <div className="w-full h-full p-4" data-testid="ar-model-container">
+                    <ModelViewer
+                        ref={modelViewerRef}
+                        src={dish.model_url}
+                        iosSrc={dish.model_usdz_url}
+                        className="w-full h-full"
+                    />
+                </div>
+            </div>
+
+            {/* Top Bar Overlay */}
+            <div className="absolute top-0 inset-x-0 p-4 flex justify-between items-center pointer-events-none">
+                <button
+                    onClick={onClose}
+                    className="w-11 h-11 rounded-full bg-white hard-border grid place-items-center pointer-events-auto shadow-md active:scale-95 transition-transform"
+                    data-testid="ar-close-btn"
+                >
+                    <X size={20} weight="bold" />
+                </button>
+                
+                <span className="tag bg-[#FC8019] text-white border-black font-extrabold uppercase tracking-widest text-[10px] shadow-sm">
+                    Interactive 3D
+                </span>
+            </div>
+
+            {/* Bottom Dish Card */}
+            <div className="absolute bottom-0 inset-x-0 p-4">
+                <div className="bg-white hard-border p-5 max-w-xl mx-auto shadow-xl">
+                    <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                            <div className="text-[10px] uppercase tracking-widest font-extrabold text-[#FC8019]">Preview</div>
+                            <div className="font-display text-2xl truncate mt-0.5">{dish.name}</div>
+                            {dish.description && (
+                                <div className="text-xs text-gray-600 line-clamp-2 mt-1">{dish.description}</div>
+                            )}
+                        </div>
+                        <div className="font-display text-2xl text-[#FC8019] whitespace-nowrap">
+                            ${dish.price.toFixed(2)}
+                        </div>
+                    </div>
+                    
+                    {/* Actions */}
+                    <div className="flex flex-col sm:flex-row gap-3 mt-4">
+                        <button
+                            onClick={startAR}
+                            className="flex-1 brand-btn py-3 px-4 flex items-center justify-center gap-2 text-sm uppercase tracking-wider font-extrabold bg-white text-black hover:bg-gray-50"
+                        >
+                            <VideoCamera size={18} weight="bold" />
+                            View on Table
+                        </button>
+
+                        <button 
+                            onClick={() => onAdd(dish)} 
+                            className="flex-1 brand-btn py-3 px-4 flex items-center justify-center gap-2 text-sm uppercase tracking-wider font-extrabold bg-[#FC8019] text-white"
+                            data-testid="ar-add-cart-btn"
+                        >
+                            <ShoppingBag size={18} weight="bold" />
+                            Add to Cart
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
 }
 
     function flip() {
@@ -300,15 +334,7 @@ function ARPreviewSheet({ dish, onClose, onAdd }) {
 
     return (
         <div className="fixed inset-0 z-50 bg-black" data-testid="ar-preview-sheet">
-            {/* Camera background */}
-            <video
-                ref={videoRef}
-                autoPlay
-                muted
-                playsInline
-                className={`absolute inset-0 w-full h-full object-cover ${camState === "live" ? "" : "opacity-40"}`}
-                data-testid="ar-camera-video"
-            />
+           
             {camState !== "live" && (
                 <div className="absolute inset-0 bg-gradient-to-br from-[#FFF3E7] via-[#FFE9D0] to-[#FDD1A6]" />
             )}
@@ -400,7 +426,7 @@ function ARPreviewSheet({ dish, onClose, onAdd }) {
             </div>
         </div>
     );
-}
+
 
 function OrderPlacedSheet({ order, onClose }) {
     return (

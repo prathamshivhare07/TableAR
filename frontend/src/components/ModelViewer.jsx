@@ -24,12 +24,10 @@ function loadModelViewer() {
         s.type = "module";
 
         // Official model-viewer CDN
-        s.src =
-            "https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js";
+        s.src = "https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js";
 
         s.onload = () => resolve();
-        s.onerror = () =>
-            reject(new Error("Failed to load model-viewer"));
+        s.onerror = () => reject(new Error("Failed to load model-viewer"));
 
         document.head.appendChild(s);
     });
@@ -57,12 +55,13 @@ const ModelViewer = forwardRef(function ModelViewer(
 
     // Expose <model-viewer> to parent components
     useImperativeHandle(forwardedRef, () => ({
-    activateAR() {
-        if (ref.current?.activateAR) {
-            ref.current.activateAR();
-        }
-    },
-}));
+        activateAR() {
+            if (ref.current?.activateAR) {
+                ref.current.activateAR();
+            }
+        },
+    }));
+
     useEffect(() => {
         loadModelViewer()
             .then(() => setReady(true))
@@ -74,11 +73,8 @@ const ModelViewer = forwardRef(function ModelViewer(
 
         const mv = ref.current;
 
-        const onStatus = (e) =>
-            console.log("AR Status:", e.detail);
-
-        const onTracking = (e) =>
-            console.log("AR Tracking:", e.detail);
+        const onStatus = (e) => console.log("AR Status:", e.detail);
+        const onTracking = (e) => console.log("AR Tracking:", e.detail);
 
         mv.addEventListener("ar-status", onStatus);
         mv.addEventListener("ar-tracking", onTracking);
@@ -103,7 +99,7 @@ const ModelViewer = forwardRef(function ModelViewer(
         );
     }
 
-   return React.createElement(
+    return React.createElement(
         "model-viewer",
         {
             ref,
@@ -113,17 +109,18 @@ const ModelViewer = forwardRef(function ModelViewer(
             poster,
             alt,
 
-            ar: ar ? "" : undefined,
+            // AR Attributes
+            ar: ar ? true : undefined,
             "ar-modes": "webxr scene-viewer quick-look",
-            
-            // CRITICAL FIX: Lock the scale so food appears true-to-size on the table
-            "ar-scale": "fixed", 
+            "ar-scale": "fixed", // CRITICAL: Locks food size to 1:1 real-world scale
+            "ar-placement": "floor", // CRITICAL: Forces placement on a flat surface like a table
 
-            "camera-controls": cameraControls ? "" : undefined,
-            "auto-rotate": autoRotate ? "" : undefined,
+            "camera-controls": cameraControls ? true : undefined,
+            "auto-rotate": autoRotate ? true : undefined,
 
+            // Lighting & Shadows
             "shadow-intensity": "1",
-            "shadow-softness": "1", // Added for softer, more realistic table shadows
+            "shadow-softness": "1", // Softer, more realistic table shadows
             "environment-image": "neutral",
             exposure: "1.1",
 
@@ -143,8 +140,25 @@ const ModelViewer = forwardRef(function ModelViewer(
 
             ...rest,
         },
-        // CRITICAL FIX: Hide the default AR button by passing an invisible div into the ar-button slot
-        React.createElement("div", { slot: "ar-button", style: { display: "none" } })
+        
+        // 1. Hide the default AR button (we use our custom one in the parent UI)
+        React.createElement("div", { slot: "ar-button", style: { display: "none" } }),
+
+        // 2. Custom WebXR Scanning Prompt (Visible on Android during surface scan)
+        React.createElement(
+            "div",
+            { 
+                slot: "interaction-prompt", 
+                className: "absolute inset-0 flex items-center justify-center pointer-events-none" 
+            },
+            React.createElement(
+                "div",
+                {
+                    className: "bg-black/80 text-white px-6 py-3 rounded-full font-bold text-sm backdrop-blur border border-white/20 animate-pulse"
+                },
+                "Move phone slowly to scan the table..."
+            )
+        )
     );
 });
 

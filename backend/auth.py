@@ -60,7 +60,7 @@ def extract_token(request: Request) -> str:
 
 
 async def get_current_user(request: Request):
-    from bankend.server import db  # local import to avoid circular
+    from backend.server import db  # local import to avoid circular
     token = extract_token(request)
     payload = decode_token(token)
     user = await db.users.find_one({"id": payload["sub"]}, {"password_hash": 0})

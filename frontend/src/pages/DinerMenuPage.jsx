@@ -248,6 +248,7 @@ function CatPill({ active, onClick, label, testId }) {
 
 function ARPreviewSheet({ dish, onClose, onAdd }) {
     const videoRef = useRef(null);
+    const modelViewerRef = useRef(null);
     const [camState, setCamState] = useState("loading"); // loading | live | denied | unsupported
     const [facing, setFacing] = useState("environment");
 
@@ -284,6 +285,14 @@ function ARPreviewSheet({ dish, onClose, onAdd }) {
         };
     }, [facing]);
 
+    function startAR() {
+    if (modelViewerRef.current?.activateAR) {
+        modelViewerRef.current.activateAR();
+    } else {
+        console.log("AR not available yet");
+    }
+}
+
     function flip() {
         setCamState("loading");
         setFacing((f) => (f === "environment" ? "user" : "environment"));
@@ -307,12 +316,13 @@ function ARPreviewSheet({ dish, onClose, onAdd }) {
             {/* 3D model overlaid, transparent background */}
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                 <div className="w-full h-full pointer-events-auto" data-testid="ar-model-container">
-                    <ModelViewer
-                        src={dish.model_url}
-                        iosSrc={dish.model_usdz_url}
-                        className="w-full h-full"
-                        style={{ background: "transparent" }}
-                    />
+                   <ModelViewer
+    ref={modelViewerRef}
+    src={dish.model_url}
+    iosSrc={dish.model_usdz_url}
+    className="w-full h-full"
+    style={{ background: "transparent" }}
+/>
                 </div>
             </div>
 
@@ -372,9 +382,20 @@ function ARPreviewSheet({ dish, onClose, onAdd }) {
                         </div>
                         <div className="font-display text-2xl text-[#FC8019] whitespace-nowrap">${dish.price.toFixed(2)}</div>
                     </div>
-                    <button onClick={() => onAdd(dish)} className="mt-3 brand-btn w-full py-3" data-testid="ar-add-cart-btn">
-                        Add to cart →
-                    </button>
+                  <button
+    onClick={startAR}
+    className="mt-3 brand-btn w-full py-3"
+>
+    Open AR →
+</button>
+
+<button 
+    onClick={() => onAdd(dish)} 
+    className="mt-3 brand-btn w-full py-3" 
+    data-testid="ar-add-cart-btn"
+>
+    Add to cart →
+</button>
                 </div>
             </div>
         </div>
@@ -396,3 +417,4 @@ function OrderPlacedSheet({ order, onClose }) {
         </div>
     );
 }
+

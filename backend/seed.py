@@ -234,7 +234,10 @@ async def _write_test_creds(
 ## WebSocket (KDS)
 - `wss://<host>/api/ws/kds?token=<jwt>`
 """
-    import os as _os
-    _os.makedirs("/app/memory", exist_ok=True)
-    with open("/app/memory/test_credentials.md", "w") as f:
-        f.write(content)
+  from pathlib import Path
+
+memory_dir = Path(__file__).parent / "memory"
+memory_dir.mkdir(exist_ok=True)
+
+with open(memory_dir / "test_credentials.md", "w") as f:
+    f.write(content)

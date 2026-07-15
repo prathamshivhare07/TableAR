@@ -3,6 +3,7 @@ import os
 import uuid
 import logging
 from datetime import datetime, timezone
+from pathlib import Path
 
 from backend.auth import hash_password, verify_password
 
@@ -216,10 +217,10 @@ async def _write_test_creds(
 - POST `/api/auth/register` — creates new tenant + tenant_admin
 - POST `/api/auth/login`
 - POST `/api/auth/logout`
-- GET  `/api/auth/me`
+- GET `/api/auth/me`
 
 ## Public diner endpoints
-- GET  `/api/menu/{{tenant_slug}}` — full menu
+- GET `/api/menu/{{tenant_slug}}` — full menu
 - POST `/api/orders` — submit order (no auth)
 
 ## Tenant endpoints (require `tenant_admin` JWT)
@@ -234,10 +235,9 @@ async def _write_test_creds(
 ## WebSocket (KDS)
 - `wss://<host>/api/ws/kds?token=<jwt>`
 """
-  from pathlib import Path
 
-memory_dir = Path(__file__).parent / "memory"
-memory_dir.mkdir(exist_ok=True)
+    memory_dir = Path(__file__).parent / "memory"
+    memory_dir.mkdir(exist_ok=True)
 
-with open(memory_dir / "test_credentials.md", "w") as f:
-    f.write(content)
+    with open(memory_dir / "test_credentials.md", "w", encoding="utf-8") as f:
+        f.write(content)

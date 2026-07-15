@@ -168,7 +168,7 @@ export default function LandingPage() {
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-10">
                         {[
                             { name: "Starter", price: "$0", tag: "1 restaurant, 20 dishes", perks: ["QR menus", "3D up to 5 dishes", "Basic KDS"] },
-                            { name: "Growth", price: "$49", featured: true, tag: "per location / month", perks: ["Unlimited dishes", "Unlimited 3D models", "Real-time KDS", "Advanced analytics"] },
+                            { name: "Growth", price: "8,999", featured: true, tag: "per location / month", perks: ["Unlimited dishes", "Unlimited 3D models", "Real-time KDS", "Advanced analytics"] },
                             { name: "Empire", price: "Custom", tag: "50+ locations", perks: ["Dedicated SLA", "Custom branding", "SSO + audit logs", "White-label"] },
                         ].map((p) => (
                             <div key={p.name} className={`p-8 border-2 ${p.featured ? "bg-[#FC8019] text-black border-[#FC8019]" : "bg-[#141414] border-white/15"}`}>

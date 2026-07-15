@@ -139,8 +139,8 @@ export default function DinerMenuPage() {
                     <div key={d.id} className="bg-white hard-border overflow-hidden flex" data-testid={`diner-dish-${d.id}`}>
                         <div className="flex-1 p-4 min-w-0">
                             <div className="flex items-center gap-2 flex-wrap">
-                                {d.is_signature && <span className="tag bg-black text-white border-black">Signature</span>}
-                                {d.model_status === "ready" && d.model_url && <span className="tag bg-[#FC8019] text-white border-black"><Cube size={12} weight="bold" /> 3D</span>}
+                               {d.is_signature && <span className="tag bg-white text-black border-black">Signature</span>}
+                                {d.model_status === "ready" && d.model_url && <span className="tag bg-[#FC8019] text-black border-black"><Cube size={12} weight="bold" /> 3D</span>}
                             </div>
                             <div className="font-display text-2xl mt-2 truncate">{d.name}</div>
                             <div className="text-sm text-gray-600 mt-1 line-clamp-2">{d.description}</div>

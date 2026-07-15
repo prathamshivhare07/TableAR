@@ -239,12 +239,15 @@ function CatPill({ active, onClick, label, testId }) {
         <button
             onClick={onClick}
             data-testid={testId}
-            className={`px-4 py-2 border-2 border-black text-xs font-extrabold uppercase tracking-widest whitespace-nowrap transition-colors ${active ? "bg-black text-white" : "bg-white hover:bg-[#FFF3E7]"}`}
+            className={`px-4 py-2 border-2 border-black text-xs font-extrabold uppercase tracking-widest whitespace-nowrap transition-colors ${
+                active ? "bg-black text-white" : "bg-white hover:bg-[#FFF3E7]"
+            }`}
         >
             {label}
         </button>
     );
 }
+
 function ARPreviewSheet({ dish, onClose, onAdd }) {
     const modelViewerRef = useRef(null);
 
@@ -258,8 +261,7 @@ function ARPreviewSheet({ dish, onClose, onAdd }) {
 
     return (
         <div className="fixed inset-0 z-50 bg-[#FFF3E7]" data-testid="ar-preview-sheet">
-            
-            {/* 3D Model Window (Gives the canvas room to breathe above the card) */}
+            {/* 3D Model Window */}
             <div className="absolute inset-x-0 top-0 bottom-64 flex items-center justify-center">
                 <div className="w-full h-full p-4" data-testid="ar-model-container">
                     <ModelViewer
@@ -327,107 +329,6 @@ function ARPreviewSheet({ dish, onClose, onAdd }) {
     );
 }
 
-    function flip() {
-        setCamState("loading");
-        setFacing((f) => (f === "environment" ? "user" : "environment"));
-    }
-
-    return (
-        <div className="fixed inset-0 z-50 bg-black" data-testid="ar-preview-sheet">
-           
-            {camState !== "live" && (
-                <div className="absolute inset-0 bg-gradient-to-br from-[#FFF3E7] via-[#FFE9D0] to-[#FDD1A6]" />
-            )}
-
-            {/* 3D model overlaid, transparent background */}
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                <div className="w-full h-full pointer-events-auto" data-testid="ar-model-container">
-                   <ModelViewer
-    ref={modelViewerRef}
-    src={dish.model_url}
-    iosSrc={dish.model_usdz_url}
-    className="w-full h-full"
-    style={{ background: "transparent" }}
-/>
-                </div>
-            </div>
-
-            {/* Top overlay */}
-            <div className="absolute top-0 inset-x-0 p-4 flex justify-between items-start pointer-events-none">
-                <button
-                    onClick={onClose}
-                    className="w-11 h-11 rounded-full bg-white hard-border grid place-items-center pointer-events-auto"
-                    data-testid="ar-close-btn"
-                >
-                    <X size={20} weight="bold" />
-                </button>
-                <div className="flex flex-col gap-2 items-end pointer-events-none">
-                    <span className={`tag ${camState === "live" ? "bg-[#FC8019] text-white border-black" : "bg-white"}`} data-testid="ar-status-tag">
-                        <VideoCamera size={12} weight="bold" />
-                        {camState === "loading" && "Starting camera…"}
-                        {camState === "live" && "LIVE AR"}
-                        {camState === "denied" && "Camera off"}
-                        {camState === "unsupported" && "3D only"}
-                    </span>
-                    {camState === "live" && (
-                        <button
-                            onClick={flip}
-                            className="tag bg-white pointer-events-auto"
-                            data-testid="ar-flip-btn"
-                        >
-                            <ArrowsClockwise size={12} weight="bold" /> Flip
-                        </button>
-                    )}
-                </div>
-            </div>
-
-            {/* Instructions */}
-            {camState === "live" && (
-                <div className="absolute top-24 inset-x-0 flex justify-center pointer-events-none">
-                    <span className="tag bg-black/70 text-white border-white/30 backdrop-blur">
-                        Point at your table · Drag to rotate · Pinch to zoom
-                    </span>
-                </div>
-            )}
-            {camState === "denied" && (
-                <div className="absolute top-24 inset-x-0 flex justify-center pointer-events-none px-4">
-                    <span className="tag bg-black/80 text-white border-white/30 backdrop-blur text-center max-w-xs">
-                        Allow camera to see this dish on your table
-                    </span>
-                </div>
-            )}
-
-            {/* Bottom card */}
-            <div className="absolute bottom-0 inset-x-0 p-4">
-                <div className="bg-white hard-border p-4 max-w-xl mx-auto">
-                    <div className="flex items-start justify-between gap-3">
-                        <div className="min-w-0">
-                            <div className="text-[10px] uppercase tracking-widest font-extrabold text-[#FC8019]">Preview</div>
-                            <div className="font-display text-2xl truncate">{dish.name}</div>
-                            {dish.description && <div className="text-xs text-gray-600 line-clamp-2 mt-1">{dish.description}</div>}
-                        </div>
-                        <div className="font-display text-2xl text-[#FC8019] whitespace-nowrap">${dish.price.toFixed(2)}</div>
-                    </div>
-                  <button
-    onClick={startAR}
-    className="mt-3 brand-btn w-full py-3"
->
-    Open AR →
-</button>
-
-<button 
-    onClick={() => onAdd(dish)} 
-    className="mt-3 brand-btn w-full py-3" 
-    data-testid="ar-add-cart-btn"
->
-    Add to cart →
-</button>
-                </div>
-            </div>
-        </div>
-    );
-
-
 function OrderPlacedSheet({ order, onClose }) {
     return (
         <div className="fixed inset-0 z-50 bg-[#FC8019] flex flex-col items-center justify-center p-6" data-testid="order-placed-sheet">
@@ -443,4 +344,3 @@ function OrderPlacedSheet({ order, onClose }) {
         </div>
     );
 }
-

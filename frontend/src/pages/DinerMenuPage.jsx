@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import axios from "axios";
 import { toast } from "sonner";
-import { ShoppingBag, X, Minus, Plus, Cube, ArrowLeft, MapPin, CheckCircle, ForkKnife, VideoCamera, ArrowsClockwise } from "@phosphor-icons/react";
+import { ShoppingBag, X, Minus, Plus, Cube, ArrowLeft, MapPin, CheckCircle, VideoCamera } from "@phosphor-icons/react";
 import { API } from "../lib/api";
 import ModelViewer from "../components/ModelViewer";
 
@@ -59,6 +59,7 @@ export default function DinerMenuPage() {
         });
         toast(`+ ${dish.name}`, { duration: 1200 });
     }
+
     function updateQty(dishId, delta) {
         setCart((prev) => prev.flatMap((i) => {
             if (i.dish_id !== dishId) return [i];
@@ -234,14 +235,16 @@ export default function DinerMenuPage() {
     );
 }
 
+// ==========================================
+// SUB-COMPONENTS
+// ==========================================
+
 function CatPill({ active, onClick, label, testId }) {
     return (
         <button
             onClick={onClick}
             data-testid={testId}
-            className={`px-4 py-2 border-2 border-black text-xs font-extrabold uppercase tracking-widest whitespace-nowrap transition-colors ${
-                active ? "bg-black text-white" : "bg-white hover:bg-[#FFF3E7]"
-            }`}
+            className={`px-4 py-2 border-2 border-black text-xs font-extrabold uppercase tracking-widest whitespace-nowrap transition-colors ${active ? "bg-black text-white" : "bg-white hover:bg-[#FFF3E7]"}`}
         >
             {label}
         </button>

@@ -19,7 +19,7 @@ from typing import Optional, List
 
 from fastapi import (
     FastAPI, APIRouter, HTTPException, Depends, Response, WebSocket,
-    WebSocketDisconnect, Query, UploadFile, File, Request, BackgroundTasks,
+    WebSocketDisconnect, Query, UploadFile, File, Request,
 )
 from fastapi.responses import Response as FastResponse
 from fastapi.middleware.cors import CORSMiddleware
@@ -673,115 +673,6 @@ async def sa_reset(did: str, _=Depends(require_super_admin)):
     if res.matched_count == 0:
         raise HTTPException(404, "Not found")
     return {"ok": True}
-
-
-def _execute_ai_3d_generation(video_bytes: bytes) -> bytes:
-    """Extracts keyframe with cv2 and calls Hugging Face TripoSR to synthesize .glb."""
-    import tempfile
-    import cv2
-    from gradio_client import Client, handle_file
-
-    with tempfile.TemporaryDirectory() as tmpdir:
-        vpath = os.path.join(tmpdir, "input.mp4")
-        with open(vpath, "wb") as f:
-            f.write(video_bytes)
-
-        cap = cv2.VideoCapture(vpath)
-        total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-        if total_frames <= 0:
-            cap.release()
-            raise ValueError("No video frames found")
-        target_frame = max(1, int(total_frames * 0.35))
-        cap.set(cv2.CAP_PROP_POS_FRAMES, target_frame)
-        ret, frame = cap.read()
-        cap.release()
-        if not ret or frame is None:
-            raise ValueError("Failed to extract frame from video")
-
-        img_path = os.path.join(tmpdir, "keyframe.jpg")
-        cv2.imwrite(img_path, frame)
-
-        client = Client("stabilityai/TripoSR")
-        preprocessed = client.predict(
-            handle_file(img_path),
-            True,
-            0.85,
-            api_name="/preprocess"
-        )
-        result = client.predict(
-            handle_file(preprocessed),
-            192,
-            api_name="/generate"
-        )
-        _, glb_path = result
-        with open(glb_path, "rb") as gf:
-            return gf.read()
-
-
-async def _bg_run_ai_pipeline(did: str, tenant_id: str, video_path: str, base_url: str):
-    try:
-        video_data, _ = get_object(video_path)
-        glb_data = await asyncio.to_thread(_execute_ai_3d_generation, video_data)
-
-        path = f"{APP_NAME}/models/{tenant_id}/{did}/{uuid.uuid4()}.glb"
-        ctype = "model/gltf-binary"
-        result = put_object(path, glb_data, ctype)
-        stored_path = result["path"]
-
-        await db.files.insert_one({
-            "id": new_id(),
-            "storage_path": stored_path,
-            "original_filename": f"dish-{did}.glb",
-            "content_type": ctype,
-            "size": len(glb_data),
-            "tenant_id": tenant_id,
-            "dish_id": did,
-            "kind": "model",
-            "is_deleted": False,
-            "created_at": now_iso(),
-        })
-        public_url = f"{base_url}/api/files/{stored_path}"
-        await db.dishes.update_one(
-            {"id": did},
-            {"$set": {
-                "model_status": "ready",
-                "model_url_path": stored_path,
-                "model_url": public_url,
-            }}
-        )
-        log.info("AI 3D generation succeeded for dish %s -> %s", did, public_url)
-    except Exception as e:
-        log.exception("AI 3D generation failed for dish %s: %s", did, e)
-        await db.dishes.update_one(
-            {"id": did},
-            {"$set": {"model_status": "pending_review", "last_ai_error": str(e)}}
-        )
-
-
-@api.post("/superadmin/dishes/{did}/auto-generate-3d")
-async def sa_auto_generate_3d(did: str, request: Request, bg_tasks: BackgroundTasks, _=Depends(require_super_admin)):
-    """Triggers automated AI video-to-3D generation using Hugging Face TripoSR in the background."""
-    dish = await db.dishes.find_one({"id": did})
-    if not dish:
-        raise HTTPException(404, "Dish not found")
-    if not dish.get("video_path"):
-        raise HTTPException(400, "Dish has no uploaded video")
-
-    await db.dishes.update_one({"id": did}, {"$set": {"model_status": "processing"}})
-    
-    # Resolve base URL
-    base = os.environ.get("PUBLIC_BASE_URL")
-    if not base:
-        fwd_host = request.headers.get("x-forwarded-host")
-        fwd_proto = request.headers.get("x-forwarded-proto", "https")
-        if fwd_host:
-            base = f"{fwd_proto}://{fwd_host}"
-        else:
-            base = str(request.base_url)
-    base = base.rstrip("/")
-
-    bg_tasks.add_task(_bg_run_ai_pipeline, did, dish["tenant_id"], dish["video_path"], base)
-    return {"status": "processing", "message": "AI 3D generation started on Hugging Face GPU"}
 
 
 # =========================================================

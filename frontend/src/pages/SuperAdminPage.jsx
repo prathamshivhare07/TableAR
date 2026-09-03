@@ -42,7 +42,12 @@ export default function SuperAdminPage() {
                         setAiGenerating((prev) => ({ ...prev, [d.id]: false }));
                         toast.success(`🎉 3D model generated for "${d.name}" and published to Diner Menu!`);
                         reload();
-                    } else if (attempts > 30) {
+                    } else if (updated.last_ai_error && updated.model_status === "pending_review" && attempts > 1) {
+                        clearInterval(interval);
+                        setAiGenerating((prev) => ({ ...prev, [d.id]: false }));
+                        toast.error(`AI error: ${updated.last_ai_error}`);
+                        reload();
+                    } else if (attempts > 35) {
                         clearInterval(interval);
                         setAiGenerating((prev) => ({ ...prev, [d.id]: false }));
                         reload();
@@ -145,6 +150,11 @@ export default function SuperAdminPage() {
                                         </div>
                                     ) : (
                                         <div className="aspect-video bg-gray-100 hard-border grid place-items-center text-xs text-gray-500 mb-3 rounded-xl">No video</div>
+                                    )}
+                                    {d.last_ai_error && (
+                                        <div className="text-[11px] font-bold text-red-600 bg-red-50 border border-red-200 rounded-lg p-2.5 mb-3 leading-tight">
+                                            ⚠️ {d.last_ai_error}
+                                        </div>
                                     )}
                                     <div className="flex flex-wrap gap-2">
                                         <button

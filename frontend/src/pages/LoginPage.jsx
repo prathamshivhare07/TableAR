@@ -26,14 +26,24 @@ export default function LoginPage() {
     }
 
     return (
-        <div className="min-h-screen bg-[#F9F8F6] grid md:grid-cols-2" data-testid="login-page">
+        <div className="min-h-[100dvh] w-full max-w-full overflow-x-clip bg-[#F9F8F6] grid md:grid-cols-2" data-testid="login-page">
             <div className="hidden md:flex flex-col justify-between p-10 bg-[#FC8019] text-black border-r-2 border-black">
                 <Link to="/" className="font-display text-3xl" data-testid="login-brand">Tabler.AR</Link>
                 <div>
                     <div className="font-display text-6xl leading-[0.9]">Welcome<br/>back, chef.</div>
                     <div className="mt-5 max-w-md text-black/80 font-medium">Every second between the diner and the kitchen matters. Log in and get back to firing tickets.</div>
                 </div>
-                <div className="text-xs uppercase tracking-widest font-bold">Demo login → demo@spice.co / demo123</div>
+                <div>
+                    <div className="text-xs uppercase tracking-widest font-extrabold text-black/70 mb-2">Instant Demo Access</div>
+                    <button
+                        type="button"
+                        onClick={() => { setEmail("demo@spice.co"); setPassword("demo123"); }}
+                        className="inline-flex items-center gap-2 px-3.5 py-2 bg-black text-white hover:bg-black/85 rounded-lg text-xs font-extrabold uppercase tracking-wider transition-all active:scale-[0.97] shadow-sm"
+                        data-testid="demo-quickfill-btn"
+                    >
+                        Fill Demo Login (demo@spice.co) →
+                    </button>
+                </div>
             </div>
             <div className="flex items-center justify-center p-6 md:p-10">
                 <form onSubmit={onSubmit} className="w-full max-w-md" data-testid="login-form">
@@ -48,7 +58,7 @@ export default function LoginPage() {
                             required
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
-                            className="mt-2 w-full px-4 py-3 hard-border bg-white focus:outline-none focus:ring-2 focus:ring-[#FC8019]"
+                            className="mt-2 w-full px-4 py-3 hard-border bg-white rounded-xl focus:outline-none focus:ring-2 focus:ring-[#FC8019] transition-all"
                             data-testid="login-email-input"
                         />
                     </label>
@@ -59,14 +69,14 @@ export default function LoginPage() {
                             required
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
-                            className="mt-2 w-full px-4 py-3 hard-border bg-white focus:outline-none focus:ring-2 focus:ring-[#FC8019]"
+                            className="mt-2 w-full px-4 py-3 hard-border bg-white rounded-xl focus:outline-none focus:ring-2 focus:ring-[#FC8019] transition-all"
                             data-testid="login-password-input"
                         />
                     </label>
                     <button
                         type="submit"
                         disabled={loading}
-                        className="brand-btn w-full mt-8 px-6 py-4"
+                        className="brand-btn w-full mt-8 px-6 py-4 rounded-xl active:scale-[0.98]"
                         data-testid="login-submit-btn"
                     >
                         {loading ? "Logging in…" : "Log in →"}

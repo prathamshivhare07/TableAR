@@ -142,13 +142,13 @@ export default function DinerMenuPage() {
                     </button>
                 </div>
                 <div className="max-w-2xl mx-auto px-5 -mt-12 relative z-10">
-                    <div className="bg-white hard-border p-5 hard-shadow rounded-lg">
+                    <div className="bg-white hard-border p-5 hard-shadow rounded-2xl">
                         <div className="text-[10px] uppercase tracking-widest font-extrabold text-[#FC8019]">Now Serving</div>
                         <h1 className="font-display text-4xl mt-1 leading-tight">{tenant.name}</h1>
                         <div className="text-sm text-gray-600 mt-1 font-medium">{tenant.tagline}</div>
                         <div className="mt-3.5 flex flex-wrap items-center gap-2">
                             {tableCode && (
-                                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-[#FC8019] text-white border-2 border-black rounded text-[11px] font-extrabold uppercase tracking-wider shadow-sm">
+                                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-[#FC8019] text-white border-2 border-black rounded-lg text-[11px] font-extrabold uppercase tracking-wider shadow-sm">
                                     <MapPin size={13} weight="fill" /> {formatTable(tableCode)}
                                 </span>
                             )}
@@ -178,19 +178,19 @@ export default function DinerMenuPage() {
                 {shownDishes.map((d) => (
                     <div
                         key={d.id}
-                        className="bg-white hard-border overflow-hidden flex transition-all duration-150 hover:shadow-[4px_4px_0px_0px_#0A0A0A] rounded-md group"
+                        className="bg-white hard-border overflow-hidden flex transition-all duration-150 hover:shadow-[4px_4px_0px_0px_#0A0A0A] rounded-2xl group"
                         data-testid={`diner-dish-${d.id}`}
                     >
                         <div className="flex-1 p-4 min-w-0 flex flex-col justify-between">
                             <div>
                                 <div className="flex items-center gap-2 flex-wrap">
                                     {d.is_signature && (
-                                        <span className="inline-flex items-center px-2 py-0.5 bg-black text-white text-[10px] font-black uppercase tracking-wider rounded">
+                                        <span className="inline-flex items-center px-2 py-0.5 bg-black text-white text-[10px] font-black uppercase tracking-wider rounded-md">
                                             Signature
                                         </span>
                                     )}
                                     {d.model_status === "ready" && d.model_url && (
-                                        <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-[#FFF3E7] text-[#FC8019] border border-[#FC8019] text-[10px] font-black uppercase tracking-wider rounded">
+                                        <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-[#FFF3E7] text-[#FC8019] border border-[#FC8019] text-[10px] font-black uppercase tracking-wider rounded-md">
                                             <Cube size={12} weight="bold" /> 3D AR
                                         </span>
                                     )}
@@ -200,13 +200,13 @@ export default function DinerMenuPage() {
                             </div>
                             <div className="mt-3.5 flex items-center justify-between pt-1">
                                 <div className="font-display text-2xl text-[#FC8019] tracking-tight">
-                                    ${d.price.toFixed(2)}
+                                    ₹{d.price.toFixed(2)}
                                 </div>
                                 <div className="flex items-center gap-2">
                                     {d.model_status === "ready" && d.model_url && (
                                         <button
                                             onClick={() => setDetail(d)}
-                                            className="ghost-btn px-3 py-1.5 text-xs inline-flex items-center gap-1.5 active:scale-95 font-extrabold uppercase tracking-wide"
+                                            className="ghost-btn px-3 py-1.5 text-xs inline-flex items-center gap-1.5 active:scale-95 font-extrabold uppercase tracking-wide rounded-xl"
                                             data-testid={`diner-preview-${d.id}`}
                                         >
                                             <Cube size={14} weight="bold" /> 3D View
@@ -234,7 +234,7 @@ export default function DinerMenuPage() {
                                 className="w-full h-full object-cover"
                             />
                             {d.model_status === "ready" && d.model_url && (
-                                <div className="absolute bottom-2 right-2 px-2 py-1 rounded bg-black/80 text-white flex items-center gap-1 text-[10px] font-bold backdrop-blur-sm shadow">
+                                <div className="absolute bottom-2 right-2 px-2 py-1 rounded-md bg-black/80 text-white flex items-center gap-1 text-[10px] font-bold backdrop-blur-sm shadow">
                                     <Cube size={12} weight="bold" /> 3D
                                 </div>
                             )}
@@ -257,7 +257,7 @@ export default function DinerMenuPage() {
                             </span>
                             In Cart
                         </span>
-                        <span className="font-display text-2xl tracking-normal text-white tabular-nums">${cartTotal.toFixed(2)}</span>
+                        <span className="font-display text-2xl tracking-normal text-white tabular-nums">₹{cartTotal.toFixed(2)}</span>
                         <span className="text-xs uppercase tracking-widest font-extrabold text-[#FC8019] flex items-center gap-1">
                             Review →
                         </span>
@@ -301,16 +301,16 @@ export default function DinerMenuPage() {
                                         src={it.image_url}
                                         alt={it.name}
                                         onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = FALLBACK_DISH_IMG; }}
-                                        className="w-14 h-14 object-cover hard-border rounded"
+                                        className="w-14 h-14 object-cover hard-border rounded-lg"
                                     />
                                     <div className="flex-1 min-w-0">
                                         <div className="font-display text-xl leading-tight truncate">{it.name}</div>
-                                        <div className="text-xs text-gray-600 font-bold mt-0.5">${it.price.toFixed(2)} each</div>
+                                        <div className="text-xs text-gray-600 font-bold mt-0.5">₹{it.price.toFixed(2)} each</div>
                                     </div>
-                                    <div className="flex items-center gap-2 bg-white hard-border rounded px-1 py-0.5">
+                                    <div className="flex items-center gap-2 bg-white hard-border rounded-lg px-1 py-0.5">
                                         <button
                                             onClick={() => updateQty(it.dish_id, -1)}
-                                            className="w-7 h-7 grid place-items-center active:scale-90 hover:bg-[#FFF3E7] rounded transition-colors"
+                                            className="w-7 h-7 grid place-items-center active:scale-90 hover:bg-[#FFF3E7] rounded-md transition-colors"
                                             data-testid={`cart-dec-${it.dish_id}`}
                                             aria-label="Decrease quantity"
                                         >
@@ -319,7 +319,7 @@ export default function DinerMenuPage() {
                                         <span className="font-display text-lg w-5 text-center">{it.qty}</span>
                                         <button
                                             onClick={() => updateQty(it.dish_id, 1)}
-                                            className="w-7 h-7 grid place-items-center active:scale-90 hover:bg-[#FFF3E7] rounded transition-colors"
+                                            className="w-7 h-7 grid place-items-center active:scale-90 hover:bg-[#FFF3E7] rounded-md transition-colors"
                                             data-testid={`cart-inc-${it.dish_id}`}
                                             aria-label="Increase quantity"
                                         >
@@ -332,7 +332,7 @@ export default function DinerMenuPage() {
                         <div className="p-5 border-t-2 border-black bg-white">
                             <div className="flex items-center justify-between mb-2">
                                 <div className="text-xs uppercase tracking-widest font-extrabold text-gray-500">Subtotal</div>
-                                <div className="font-display text-2xl text-[#0A0A0A]">${cartTotal.toFixed(2)}</div>
+                                <div className="font-display text-2xl text-[#0A0A0A]">₹{cartTotal.toFixed(2)}</div>
                             </div>
                             <div className="text-[11px] uppercase tracking-wider font-extrabold text-gray-500 mb-4 flex items-center justify-between">
                                 <span>{tableCode ? `Delivering to ${formatTable(tableCode)}` : "Takeaway / Counter Pickup"}</span>
@@ -341,10 +341,10 @@ export default function DinerMenuPage() {
                             <button
                                 onClick={submitOrder}
                                 disabled={placing}
-                                className="brand-btn w-full py-4 text-sm font-extrabold rounded-md shadow-[4px_4px_0px_0px_#0A0A0A]"
+                                className="brand-btn w-full py-4 text-sm font-extrabold rounded-xl shadow-[4px_4px_0px_0px_#0A0A0A]"
                                 data-testid="diner-submit-order-btn"
                             >
-                                {placing ? "Placing Order…" : `Place Order — $${(cartTotal * 1.08).toFixed(2)}`}
+                                {placing ? "Placing Order…" : `Place Order · ₹${(cartTotal * 1.08).toFixed(2)}`}
                             </button>
                         </div>
                     </div>
@@ -374,7 +374,7 @@ function CatPill({ active, onClick, label, testId }) {
         <button
             onClick={onClick}
             data-testid={testId}
-            className={`px-4 py-2 border-2 border-black text-xs font-extrabold uppercase tracking-wider whitespace-nowrap transition-[transform,background-color,box-shadow] duration-150 active:scale-[0.97] rounded ${
+            className={`px-4 py-2 border-2 border-black text-xs font-extrabold uppercase tracking-wider whitespace-nowrap transition-[transform,background-color,box-shadow] duration-150 active:scale-[0.97] rounded-xl ${
                 active
                     ? "bg-black text-white shadow-[2px_2px_0px_0px_rgba(252,128,25,1)]"
                     : "bg-white text-black hover:bg-[#FFF3E7] shadow-sm"
@@ -409,7 +409,7 @@ function ARPreviewSheet({ dish, onClose, onAdd }) {
                     <X size={20} weight="bold" />
                 </button>
                 
-                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#FC8019] text-white border-2 border-black font-extrabold uppercase tracking-wider text-[11px] rounded shadow-[2px_2px_0px_0px_#0A0A0A]">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#FC8019] text-white border-2 border-black font-extrabold uppercase tracking-wider text-[11px] rounded-lg shadow-[2px_2px_0px_0px_#0A0A0A]">
                     <Cube size={14} weight="bold" /> 1:1 Scale WebAR
                 </span>
             </div>
@@ -433,7 +433,7 @@ function ARPreviewSheet({ dish, onClose, onAdd }) {
 
             {/* Bottom Dish Card */}
             <div className="relative z-20 p-4 bg-gradient-to-t from-[#FFF3E7] to-transparent">
-                <div className="bg-white hard-border p-5 max-w-xl mx-auto hard-shadow rounded-lg">
+                <div className="bg-white hard-border p-5 max-w-xl mx-auto hard-shadow rounded-2xl">
                     <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0 flex-1">
                             <div className="text-[10px] uppercase tracking-widest font-extrabold text-[#FC8019]">Live 3D Preview</div>
@@ -443,7 +443,7 @@ function ARPreviewSheet({ dish, onClose, onAdd }) {
                             )}
                         </div>
                         <div className="font-display text-3xl text-[#FC8019] whitespace-nowrap">
-                            ${dish.price.toFixed(2)}
+                            ₹{dish.price.toFixed(2)}
                         </div>
                     </div>
                     
@@ -451,7 +451,7 @@ function ARPreviewSheet({ dish, onClose, onAdd }) {
                     <div className="flex flex-col sm:flex-row gap-3 mt-4 pt-1">
                         <button
                             onClick={startAR}
-                            className="flex-1 ghost-btn py-3.5 px-4 flex items-center justify-center gap-2 text-xs uppercase tracking-wider font-extrabold rounded active:scale-[0.97]"
+                            className="flex-1 ghost-btn py-3.5 px-4 flex items-center justify-center gap-2 text-xs uppercase tracking-wider font-extrabold rounded-xl active:scale-[0.97]"
                         >
                             <VideoCamera size={16} weight="bold" />
                             View on Table
@@ -459,7 +459,7 @@ function ARPreviewSheet({ dish, onClose, onAdd }) {
 
                         <button 
                             onClick={() => onAdd(dish)} 
-                            className="flex-1 brand-btn py-3.5 px-4 flex items-center justify-center gap-2 text-xs uppercase tracking-wider font-extrabold rounded active:scale-[0.97] shadow-[4px_4px_0px_0px_#0A0A0A]"
+                            className="flex-1 brand-btn py-3.5 px-4 flex items-center justify-center gap-2 text-xs uppercase tracking-wider font-extrabold rounded-xl active:scale-[0.97] shadow-[4px_4px_0px_0px_#0A0A0A]"
                             data-testid="ar-add-cart-btn"
                         >
                             <ShoppingBag size={16} weight="bold" />
@@ -478,9 +478,9 @@ function OrderPlacedSheet({ order, onClose }) {
             <CheckCircle size={80} weight="fill" className="text-[#0A0A0A] drop-shadow-md animate-checkmark-spring" />
             <div className="font-display text-6xl mt-6 text-black text-center tracking-tight">Order in!</div>
             <div className="text-black/90 mt-2 text-center text-sm font-semibold">The kitchen is on it. Ticket <b>#{order.order_no}</b>.</div>
-            <div className="mt-8 bg-white hard-border p-5 w-full max-w-sm text-center hard-shadow rounded-lg animate-in zoom-in-95 duration-200">
+            <div className="mt-8 bg-white hard-border p-5 w-full max-w-sm text-center hard-shadow rounded-2xl animate-in zoom-in-95 duration-200">
                 <div className="text-[10px] uppercase tracking-widest font-extrabold text-gray-500">Total Charged</div>
-                <div className="font-display text-5xl mt-1 text-[#0A0A0A] tabular-nums">${order.total.toFixed(2)}</div>
+                <div className="font-display text-5xl mt-1 text-[#0A0A0A] tabular-nums">₹{order.total.toFixed(2)}</div>
                 <div className="text-xs text-gray-500 mt-1 font-bold">Includes 8% tax · Fast Kitchen Dispatch</div>
             </div>
             <button

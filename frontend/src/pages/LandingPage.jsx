@@ -10,19 +10,19 @@ const HERO_MODELS = [
     {
         name: "Avocado Toast",
         category: "Signature Brunch",
-        price: "$14.50",
+        price: "₹450",
         url: "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/Avocado/glTF-Binary/Avocado.glb",
     },
     {
         name: "Hydration Flask",
         category: "Beverage",
-        price: "$6.00",
+        price: "₹180",
         url: "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/WaterBottle/glTF-Binary/WaterBottle.glb",
     },
     {
         name: "Suzanne Gelato",
         category: "Dessert Art",
-        price: "$8.50",
+        price: "₹260",
         url: "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/Suzanne/glTF-Binary/Suzanne.glb",
     },
 ];
@@ -32,7 +32,7 @@ function Chip({ children, tone = "ink" }) {
         ? "bg-[#FC8019] text-white border-black"
         : "bg-white text-black border-black";
     return (
-        <span className={`inline-flex items-center gap-1.5 px-3 py-1 text-[11px] font-extrabold uppercase tracking-widest border-2 shadow-sm rounded-sm ${cls}`}>
+        <span className={`inline-flex items-center gap-1.5 px-3 py-1 text-[11px] font-extrabold uppercase tracking-widest border-2 shadow-sm rounded-md ${cls}`}>
             {children}
         </span>
     );
@@ -65,7 +65,7 @@ export default function LandingPage() {
             <header className="border-b-2 border-black bg-white/90 backdrop-blur-md sticky top-0 z-40 w-full max-w-full">
                 <div className="max-w-[1400px] mx-auto flex items-center justify-between px-4 sm:px-6 py-4">
                     <Link to="/" className="flex items-center gap-2.5 group shrink-0" data-testid="brand-link" aria-label="Tabler.AR Home">
-                        <div className="w-10 h-10 bg-[#FC8019] hard-border grid place-items-center group-hover:rotate-6 transition-transform">
+                        <div className="w-10 h-10 bg-[#FC8019] hard-border grid place-items-center group-hover:rotate-6 transition-transform rounded-xl">
                             <ForkKnife size={22} weight="fill" color="#0A0A0A" />
                         </div>
                         <div className="font-display text-2xl leading-none tracking-tight">
@@ -85,14 +85,14 @@ export default function LandingPage() {
                     <div className="flex items-center gap-2 sm:gap-3 shrink-0">
                         <button
                             onClick={() => nav("/login")}
-                            className="hidden sm:inline-flex ghost-btn px-4 py-2 text-xs font-extrabold uppercase tracking-wider rounded"
+                            className="hidden sm:inline-flex ghost-btn px-4 py-2 text-xs font-extrabold uppercase tracking-wider rounded-xl"
                             data-testid="nav-login-btn"
                         >
                             Log in
                         </button>
                         <button
                             onClick={() => nav("/register")}
-                            className="brand-btn px-4 sm:px-5 py-2 text-xs font-extrabold uppercase tracking-wider rounded flex items-center gap-1.5"
+                            className="brand-btn px-4 sm:px-5 py-2 text-xs font-extrabold uppercase tracking-wider rounded-xl flex items-center gap-1.5"
                             data-testid="nav-register-btn"
                         >
                             Get Started <ArrowRight size={14} weight="bold" />
@@ -138,7 +138,7 @@ export default function LandingPage() {
 
                             <h1 className="font-display text-[42px] sm:text-[68px] md:text-[88px] lg:text-[98px] leading-[0.92] tracking-tight break-words">
                                 Kill the <br />
-                                <span className="bg-[#FC8019] text-white px-2.5 sm:px-3.5 inline-block hard-border shadow-[3px_3px_0px_0px_#0A0A0A] sm:shadow-[4px_4px_0px_0px_#0A0A0A] rotate-[-1deg] origin-left">
+                                <span className="bg-[#FC8019] text-white px-2.5 sm:px-3.5 inline-block hard-border shadow-[3px_3px_0px_0px_#0A0A0A] sm:shadow-[4px_4px_0px_0px_#0A0A0A] rotate-[-1deg] origin-left rounded-md">
                                     Menu.
                                 </span><br />
                                 Project the <span className="italic font-normal font-serif text-[#0A0A0A]">experience.</span>
@@ -151,14 +151,14 @@ export default function LandingPage() {
                             <div className="mt-7 sm:mt-8 flex flex-wrap gap-3 sm:gap-4">
                                 <button
                                     onClick={() => nav("/register")}
-                                    className="brand-btn px-6 sm:px-7 py-3.5 sm:py-4 text-xs sm:text-sm font-extrabold tracking-wider rounded"
+                                    className="brand-btn px-6 sm:px-7 py-3.5 sm:py-4 text-xs sm:text-sm font-extrabold tracking-wider rounded-xl"
                                     data-testid="hero-cta-register"
                                 >
                                     Start Free - No Credit Card
                                 </button>
                                 <button
                                     onClick={() => nav("/m/spice-route")}
-                                    className="ghost-btn px-5 sm:px-6 py-3.5 sm:py-4 text-xs sm:text-sm font-extrabold tracking-wider rounded inline-flex items-center gap-2"
+                                    className="ghost-btn px-5 sm:px-6 py-3.5 sm:py-4 text-xs sm:text-sm font-extrabold tracking-wider rounded-xl inline-flex items-center gap-2"
                                     data-testid="hero-cta-demo"
                                 >
                                     Try Diner WebAR Demo <ArrowUpRight size={18} weight="bold" />
@@ -176,10 +176,10 @@ export default function LandingPage() {
 
                         {/* Right: Live Interactive 3D Card with Model Switcher */}
                         <div className="col-span-12 lg:col-span-5 z-10 min-w-0">
-                            <div className="hard-border bg-white p-4 sm:p-5 hard-shadow-lg rounded-lg relative max-w-full">
+                            <div className="hard-border bg-white p-4 sm:p-5 hard-shadow-lg rounded-2xl relative max-w-full">
                                 <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
                                     <div className="flex items-center gap-2">
-                                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-[#FC8019] text-white text-[10px] font-extrabold uppercase tracking-wider rounded border border-black">
+                                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-[#FC8019] text-white text-[10px] font-extrabold uppercase tracking-wider rounded-md border border-black">
                                             <Cube size={13} weight="bold" /> Live 3D Canvas
                                         </span>
                                         <span className="text-[10px] uppercase tracking-widest font-extrabold text-gray-500">
@@ -192,7 +192,7 @@ export default function LandingPage() {
                                 </div>
 
                                 {/* 3D Canvas Container */}
-                                <div className={`aspect-[4/4.5] bg-[#FFF3E7] hard-border overflow-hidden rounded relative transition-[opacity,filter] duration-200 ease-out ${isSwitchingModel ? "opacity-60 blur-[2px]" : "opacity-100 blur-0"}`}>
+                                <div className={`aspect-[4/4.5] bg-[#FFF3E7] hard-border overflow-hidden rounded-xl relative transition-[opacity,filter] duration-200 ease-out ${isSwitchingModel ? "opacity-60 blur-[2px]" : "opacity-100 blur-0"}`}>
                                     <ModelViewer
                                         key={activeModel.url}
                                         src={activeModel.url}
@@ -224,7 +224,7 @@ export default function LandingPage() {
                                             <button
                                                 key={m.name}
                                                 onClick={() => switchModel(idx)}
-                                                className={`px-2 py-1 text-[10px] font-extrabold uppercase tracking-wider border border-black rounded transition-[transform,background-color] duration-150 active:scale-[0.97] ${
+                                                className={`px-2 py-1 text-[10px] font-extrabold uppercase tracking-wider border border-black rounded-lg transition-[transform,background-color] duration-150 active:scale-[0.97] ${
                                                     activeModelIdx === idx
                                                         ? "bg-black text-white shadow-sm"
                                                         : "bg-white text-black hover:bg-[#FFF3E7]"
@@ -285,7 +285,7 @@ export default function LandingPage() {
                             ].map(({ step, title, desc, icon: Icon }) => (
                                 <div
                                     key={step}
-                                    className="hard-border bg-[#F9F8F6] p-6 hard-shadow-sm rounded-lg flex flex-col justify-between transition-all duration-200 hover:-translate-y-1 hover:hard-shadow"
+                                    className="hard-border bg-[#F9F8F6] p-6 hard-shadow-sm rounded-2xl flex flex-col justify-between transition-all duration-200 hover:-translate-y-1 hover:hard-shadow"
                                     data-testid={`step-${step}`}
                                 >
                                     <div>
@@ -362,14 +362,14 @@ export default function LandingPage() {
                             ].map((f) => (
                                 <div
                                     key={f.title}
-                                    className="hard-border bg-white p-5 sm:p-6 rounded-lg hard-shadow-sm flex flex-col justify-between hover:bg-[#FFF3E7] transition-all duration-200 min-w-0 max-w-full"
+                                    className="hard-border bg-white p-5 sm:p-6 rounded-2xl hard-shadow-sm flex flex-col justify-between hover:bg-[#FFF3E7] transition-all duration-200 min-w-0 max-w-full"
                                 >
                                     <div>
                                         <div className="flex items-center justify-between mb-3">
-                                            <div className="w-10 h-10 rounded-lg bg-black text-white grid place-items-center">
+                                            <div className="w-10 h-10 rounded-xl bg-black text-white grid place-items-center">
                                                 <f.icon size={22} weight="bold" />
                                             </div>
-                                            <span className="text-[10px] font-extrabold uppercase tracking-wider px-2 py-0.5 border border-black rounded bg-white">
+                                            <span className="text-[10px] font-extrabold uppercase tracking-wider px-2 py-0.5 border border-black rounded-md bg-white">
                                                 {f.badge}
                                             </span>
                                         </div>
@@ -399,7 +399,7 @@ export default function LandingPage() {
                             {[
                                 {
                                     name: "Starter",
-                                    price: "$0",
+                                    price: "₹0",
                                     period: "Free forever",
                                     featured: false,
                                     tag: "1 location · Up to 20 menu items",
@@ -414,7 +414,7 @@ export default function LandingPage() {
                                 },
                                 {
                                     name: "Growth",
-                                    price: "$79",
+                                    price: "₹2,499",
                                     period: "per month / location",
                                     featured: true,
                                     tag: "Our most popular package for busy venues",
@@ -446,14 +446,14 @@ export default function LandingPage() {
                             ].map((p) => (
                                 <div
                                     key={p.name}
-                                    className={`p-6 sm:p-8 border-2 hard-border rounded-lg flex flex-col justify-between transition-all duration-200 min-w-0 max-w-full ${
+                                    className={`p-6 sm:p-8 border-2 hard-border rounded-2xl flex flex-col justify-between transition-all duration-200 min-w-0 max-w-full ${
                                         p.featured
                                             ? "bg-[#FFF3E7] hard-shadow-lg scale-100 md:-translate-y-2 relative"
                                             : "bg-[#F9F8F6] hard-shadow-sm hover:hard-shadow"
                                     }`}
                                 >
                                     {p.featured && (
-                                        <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-[#FC8019] text-white border-2 border-black px-3.5 py-0.5 rounded text-[11px] font-black uppercase tracking-wider shadow-sm whitespace-nowrap">
+                                        <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-[#FC8019] text-white border-2 border-black px-3.5 py-0.5 rounded-full text-[11px] font-black uppercase tracking-wider shadow-sm whitespace-nowrap">
                                             Most Popular Choice
                                         </div>
                                     )}
@@ -485,7 +485,7 @@ export default function LandingPage() {
 
                                     <button
                                         onClick={() => nav("/register")}
-                                        className={`mt-8 w-full py-3.5 sm:py-4 text-xs font-extrabold uppercase tracking-wider rounded border-2 border-black transition-all active:scale-[0.98] ${
+                                        className={`mt-8 w-full py-3.5 sm:py-4 text-xs font-extrabold uppercase tracking-wider rounded-xl border-2 border-black transition-all active:scale-[0.98] ${
                                             p.featured
                                                 ? "brand-btn text-white shadow-[4px_4px_0px_0px_#0A0A0A]"
                                                 : "ghost-btn text-black shadow-[3px_3px_0px_0px_#0A0A0A]"
@@ -506,7 +506,7 @@ export default function LandingPage() {
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-8 pb-10 border-b border-black/15">
                         <div className="md:col-span-2">
                             <div className="flex items-center gap-2.5">
-                                <div className="w-9 h-9 bg-[#FC8019] hard-border grid place-items-center">
+                                <div className="w-9 h-9 bg-[#FC8019] hard-border grid place-items-center rounded-xl">
                                     <ForkKnife size={18} weight="fill" color="#0A0A0A" />
                                 </div>
                                 <span className="font-display text-2xl tracking-tight">Tabler<span className="text-[#FC8019]">.AR</span></span>

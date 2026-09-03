@@ -138,20 +138,20 @@ export default function KDSPage() {
             {/* Header: Kitchen Command Center Navigation */}
             <header className="border-b border-white/10 px-6 py-3.5 flex items-center justify-between bg-[#111111]/80 backdrop-blur-md">
                 <div className="flex items-center gap-4">
-                    <Link
-                        to="/dashboard"
-                        className="w-9 h-9 rounded-md bg-white/10 hover:bg-white/20 border border-white/10 grid place-items-center text-white/70 hover:text-white transition-colors"
-                        data-testid="kds-back-link"
+                    <button
+                        onClick={() => nav("/dashboard")}
+                        className="w-10 h-10 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 grid place-items-center transition-colors active:scale-95"
+                        data-testid="kds-back-btn"
                         aria-label="Back to dashboard"
                     >
                         <ArrowLeft size={18} weight="bold" />
-                    </Link>
+                    </button>
                     <div>
                         <div className="flex items-center gap-2">
                             <span className="text-[10px] uppercase tracking-widest text-[#FC8019] font-black">
                                 Kitchen Display System
                             </span>
-                            <span className="text-[10px] px-1.5 py-0.2 bg-white/10 text-white/70 rounded font-mono font-bold">
+                            <span className="text-[10px] px-2 py-0.5 bg-white/10 text-white/70 rounded-md font-mono font-bold">
                                 {activeTicketsCount} Active
                             </span>
                         </div>
@@ -166,7 +166,7 @@ export default function KDSPage() {
                             setSoundEnabled(!soundEnabled);
                             toast(soundEnabled ? "Chime muted" : "Chime active");
                         }}
-                        className={`px-3 py-1.5 rounded text-xs font-extrabold uppercase tracking-wider flex items-center gap-1.5 border transition-all ${
+                        className={`px-3 py-1.5 rounded-xl text-xs font-extrabold uppercase tracking-wider flex items-center gap-1.5 border transition-all ${
                             soundEnabled
                                 ? "bg-white/10 text-white border-white/20 hover:bg-white/15"
                                 : "bg-red-500/20 text-red-400 border-red-500/30"
@@ -184,7 +184,7 @@ export default function KDSPage() {
                     </div>
 
                     {/* Live Clock with Tabular Numbers */}
-                    <div className="text-xs font-mono font-bold text-white/60 tabular-nums hidden sm:block bg-black/40 px-2.5 py-1 rounded border border-white/10">
+                    <div className="text-xs font-mono font-bold text-white/60 tabular-nums hidden sm:block bg-black/40 px-2.5 py-1 rounded-lg border border-white/10">
                         {new Date(now).toLocaleTimeString()}
                     </div>
                 </div>
@@ -195,7 +195,7 @@ export default function KDSPage() {
                 {COLUMNS.map((col) => {
                     const tickets = byStatus[col.key] || [];
                     return (
-                        <div key={col.key} className="flex flex-col min-h-0 bg-[#141414] rounded-lg border border-white/10 p-3" data-testid={`kds-col-${col.key}`}>
+                        <div key={col.key} className="flex flex-col min-h-0 bg-[#141414] rounded-2xl border border-white/10 p-3.5" data-testid={`kds-col-${col.key}`}>
                             {/* Column Header */}
                             <div className="px-3 py-2.5 flex items-center justify-between mb-3 border-b border-white/10">
                                 <div className="flex items-center gap-2">
@@ -215,7 +215,7 @@ export default function KDSPage() {
                                     return (
                                         <div
                                             key={o.id}
-                                            className={`bg-[#1C1C1C] border border-white/15 rounded-lg p-4 transition-all duration-200 ${
+                                            className={`bg-[#1C1C1C] border border-white/15 rounded-xl p-4 transition-all duration-200 ${
                                                 isHot ? "ring-2 ring-[#FF3B30] bg-[#221717]" : "hover:border-white/30"
                                             }`}
                                             data-testid={`kds-ticket-${o.order_no}`}
@@ -227,7 +227,7 @@ export default function KDSPage() {
                                                 </div>
                                                 <div className="text-right">
                                                     <div className="text-[10px] uppercase tracking-widest text-white/50 font-bold">Location</div>
-                                                    <div className="inline-flex items-center px-2 py-0.5 rounded bg-white/10 text-white font-extrabold text-xs uppercase tracking-wider mt-0.5">
+                                                    <div className="inline-flex items-center px-2 py-0.5 rounded-md bg-white/10 text-white font-extrabold text-xs uppercase tracking-wider mt-0.5">
                                                         {formatTable(o.table_code)}
                                                     </div>
                                                 </div>
@@ -263,7 +263,7 @@ export default function KDSPage() {
                                                     </span>
                                                 </span>
                                                 <span className="tabular-nums font-bold text-white/80">
-                                                    ${o.total.toFixed(2)}
+                                                    ₹{o.total.toFixed(2)}
                                                 </span>
                                             </div>
 
@@ -273,14 +273,14 @@ export default function KDSPage() {
                                                     <>
                                                         <button
                                                             onClick={() => setStatus(o, "preparing")}
-                                                            className="col-span-2 py-2.5 bg-[#FC8019] text-black font-extrabold uppercase tracking-wider text-xs rounded hover:bg-[#E56B0C] active:scale-[0.97] transition-[transform,background-color] duration-150 shadow-sm"
+                                                            className="col-span-2 py-2.5 bg-[#FC8019] text-black font-extrabold uppercase tracking-wider text-xs rounded-xl hover:bg-[#E56B0C] active:scale-[0.97] transition-[transform,background-color] duration-150 shadow-sm"
                                                             data-testid={`kds-start-${o.order_no}`}
                                                         >
                                                             Start Cooking →
                                                         </button>
                                                         <button
                                                             onClick={() => setStatus(o, "cancelled")}
-                                                            className="col-span-2 py-1.5 border border-white/20 text-white/60 text-[11px] uppercase tracking-wider font-bold rounded hover:bg-red-500/20 hover:text-white hover:border-red-500/40 active:scale-[0.97] transition-[transform,background-color,border-color] duration-150"
+                                                            className="col-span-2 py-1.5 border border-white/20 text-white/60 text-[11px] uppercase tracking-wider font-bold rounded-xl hover:bg-red-500/20 hover:text-white hover:border-red-500/40 active:scale-[0.97] transition-[transform,background-color,border-color] duration-150"
                                                             data-testid={`kds-cancel-${o.order_no}`}
                                                         >
                                                             Cancel Order
@@ -290,7 +290,7 @@ export default function KDSPage() {
                                                 {col.key === "preparing" && (
                                                     <button
                                                         onClick={() => setStatus(o, "ready")}
-                                                        className="col-span-2 py-2.5 bg-[#00C244] text-black font-extrabold uppercase tracking-wider text-xs rounded hover:brightness-105 active:scale-[0.97] transition-[transform,filter] duration-150 shadow-sm flex items-center justify-center gap-1.5"
+                                                        className="col-span-2 py-2.5 bg-[#00C244] text-black font-extrabold uppercase tracking-wider text-xs rounded-xl hover:brightness-105 active:scale-[0.97] transition-[transform,filter] duration-150 shadow-sm flex items-center justify-center gap-1.5"
                                                         data-testid={`kds-ready-${o.order_no}`}
                                                     >
                                                         <Check size={16} weight="bold" />
@@ -300,7 +300,7 @@ export default function KDSPage() {
                                                 {col.key === "ready" && (
                                                     <button
                                                         onClick={() => setStatus(o, "served")}
-                                                        className="col-span-2 py-2.5 bg-white text-black font-extrabold uppercase tracking-wider text-xs rounded hover:bg-white/90 active:scale-[0.97] transition-[transform,background-color] duration-150 shadow-sm flex items-center justify-center gap-1.5"
+                                                        className="col-span-2 py-2.5 bg-white text-black font-extrabold uppercase tracking-wider text-xs rounded-xl hover:bg-white/90 active:scale-[0.97] transition-[transform,background-color] duration-150 shadow-sm flex items-center justify-center gap-1.5"
                                                         data-testid={`kds-served-${o.order_no}`}
                                                     >
                                                         <Check size={16} weight="bold" />
@@ -314,7 +314,7 @@ export default function KDSPage() {
 
                                 {/* Empty State when no tickets */}
                                 {tickets.length === 0 && (
-                                    <div className="text-center text-white/30 py-20 flex flex-col items-center justify-center border border-dashed border-white/10 rounded-lg">
+                                    <div className="text-center text-white/30 py-20 flex flex-col items-center justify-center border border-dashed border-white/10 rounded-xl">
                                         <col.icon size={36} weight="duotone" className="text-white/20 mb-2" />
                                         <div className="text-xs uppercase tracking-widest font-extrabold">All Clear</div>
                                         <div className="text-[11px] text-white/40 mt-1 font-medium">No tickets in this stage</div>

@@ -8,7 +8,7 @@ import ModelViewer from "../components/ModelViewer";
 
 function StatBox({ label, value }) {
     return (
-        <div className="hard-border bg-white p-5">
+        <div className="hard-border bg-white p-5 rounded-xl">
             <div className="text-[10px] uppercase tracking-widest font-extrabold text-gray-500">{label}</div>
             <div className="font-display text-4xl mt-1">{value ?? "—"}</div>
         </div>
@@ -44,7 +44,7 @@ export default function SuperAdminPage() {
     }, [user, nav]);
 
     return (
-        <div className="min-h-screen bg-[#F9F8F6]" data-testid="superadmin-page">
+        <div className="min-h-[100dvh] w-full max-w-full overflow-x-clip bg-[#F9F8F6]" data-testid="superadmin-page">
             <header className="border-b-2 border-black bg-black text-white sticky top-0 z-30">
                 <div className="max-w-[1400px] mx-auto px-6 py-4 flex items-center justify-between">
                     <div className="flex items-center gap-6">
@@ -55,7 +55,7 @@ export default function SuperAdminPage() {
                                 { k: "tenants", t: "Tenants" },
                             ].map(({ k, t }) => (
                                 <button key={k} onClick={() => setTab(k)}
-                                    className={`px-3 py-2 text-xs font-extrabold uppercase tracking-widest transition-colors ${tab === k ? "bg-[#FC8019] text-black" : "hover:bg-white/10"}`}
+                                    className={`px-3 py-2 text-xs font-extrabold uppercase tracking-widest rounded-lg transition-colors ${tab === k ? "bg-[#FC8019] text-black" : "hover:bg-white/10"}`}
                                     data-testid={`super-tab-${k}`}>{t}</button>
                             ))}
                         </nav>
@@ -88,7 +88,7 @@ export default function SuperAdminPage() {
                         </div>
 
                         {queue.length === 0 && (
-                            <div className="hard-border bg-white p-12 text-center text-gray-500">
+                            <div className="hard-border bg-white p-12 text-center text-gray-500 rounded-2xl">
                                 <Cube size={48} className="mx-auto mb-4" />
                                 <div className="font-display text-2xl">Queue clear.</div>
                                 <div className="text-sm mt-1">No pending models across any tenant.</div>
@@ -97,7 +97,7 @@ export default function SuperAdminPage() {
 
                         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 stagger">
                             {queue.map((d) => (
-                                <div key={d.id} className="hard-border bg-white p-4" data-testid={`super-queue-item-${d.id}`}>
+                                <div key={d.id} className="hard-border bg-white p-4 rounded-2xl" data-testid={`super-queue-item-${d.id}`}>
                                     <div className="flex items-center justify-between mb-3">
                                         <div>
                                             <div className="font-display text-2xl leading-tight">{d.name}</div>
@@ -106,19 +106,19 @@ export default function SuperAdminPage() {
                                         <span className="tag bg-yellow-300 border-black">{d.model_status}</span>
                                     </div>
                                     {d.video_url ? (
-                                        <div className="aspect-video bg-black hard-border overflow-hidden mb-3">
+                                        <div className="aspect-video bg-black hard-border overflow-hidden mb-3 rounded-xl">
                                             <video src={d.video_url} controls className="w-full h-full object-contain" data-testid={`super-video-${d.id}`} />
                                         </div>
                                     ) : (
-                                        <div className="aspect-video bg-gray-100 hard-border grid place-items-center text-xs text-gray-500 mb-3">No video</div>
+                                        <div className="aspect-video bg-gray-100 hard-border grid place-items-center text-xs text-gray-500 mb-3 rounded-xl">No video</div>
                                     )}
                                     <div className="flex flex-wrap gap-2">
                                         {d.video_url && (
-                                            <a href={d.video_url} download className="ghost-btn px-3 py-2 text-xs inline-flex items-center gap-2" data-testid={`super-download-${d.id}`}>
+                                            <a href={d.video_url} download className="ghost-btn px-3 py-2 text-xs inline-flex items-center gap-2 rounded-xl" data-testid={`super-download-${d.id}`}>
                                                 <Download size={14} weight="bold" /> Download video
                                             </a>
                                         )}
-                                        <button onClick={() => setUploadFor(d)} className="brand-btn px-3 py-2 text-xs inline-flex items-center gap-2" data-testid={`super-upload-glb-${d.id}`}>
+                                        <button onClick={() => setUploadFor(d)} className="brand-btn px-3 py-2 text-xs inline-flex items-center gap-2 rounded-xl" data-testid={`super-upload-glb-${d.id}`}>
                                             <Cube size={14} weight="bold" /> Upload .glb
                                         </button>
                                     </div>
@@ -136,7 +136,7 @@ export default function SuperAdminPage() {
                                 <h1 className="font-display text-5xl">Tenants</h1>
                             </div>
                         </div>
-                        <div className="hard-border bg-white overflow-hidden">
+                        <div className="hard-border bg-white overflow-hidden rounded-2xl">
                             <table className="w-full text-sm">
                                 <thead className="bg-black text-white text-[10px] uppercase tracking-widest">
                                     <tr>
@@ -198,7 +198,7 @@ function UploadGlbModal({ dish, onClose, onDone }) {
     }
     return (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" data-testid="super-upload-modal">
-            <div className="bg-white hard-border hard-shadow-lg w-full max-w-lg p-6">
+            <div className="bg-white hard-border hard-shadow-lg w-full max-w-lg p-6 rounded-2xl">
                 <div className="flex items-center justify-between">
                     <div>
                         <div className="text-[10px] uppercase tracking-widest font-extrabold text-[#FC8019]">Upload 3D model</div>
@@ -207,15 +207,15 @@ function UploadGlbModal({ dish, onClose, onDone }) {
                     </div>
                     <button onClick={onClose} className="text-sm font-bold" data-testid="super-upload-close">✕</button>
                 </div>
-                <label className="mt-6 block border-2 border-dashed border-black p-8 text-center cursor-pointer bg-[#FFF3E7] hover:bg-[#FFE9D0] transition-colors">
+                <label className="mt-6 block border-2 border-dashed border-black p-8 text-center cursor-pointer bg-[#FFF3E7] hover:bg-[#FFE9D0] transition-colors rounded-xl">
                     <input type="file" accept=".glb,.usdz,model/gltf-binary,model/vnd.usdz+zip" className="hidden" onChange={(e) => setFile(e.target.files?.[0] || null)} data-testid="super-glb-input" />
                     <Cube size={36} weight="bold" className="mx-auto" />
                     <div className="font-display text-2xl mt-2">{file ? file.name : "Choose .glb or .usdz"}</div>
                     <div className="text-xs text-gray-600 mt-1">{file ? `${(file.size / 1024 / 1024).toFixed(2)}MB` : "Max 25MB"}</div>
                 </label>
                 <div className="mt-6 flex justify-end gap-3">
-                    <button onClick={onClose} className="ghost-btn px-4 py-3 text-sm">Cancel</button>
-                    <button onClick={submit} disabled={!file || uploading} className="brand-btn px-4 py-3 text-sm" data-testid="super-glb-submit">
+                    <button onClick={onClose} className="ghost-btn px-4 py-3 text-sm rounded-xl">Cancel</button>
+                    <button onClick={submit} disabled={!file || uploading} className="brand-btn px-4 py-3 text-sm rounded-xl" data-testid="super-glb-submit">
                         {uploading ? "Uploading…" : "Publish → diner menu"}
                     </button>
                 </div>

@@ -42,7 +42,7 @@ export default function RegisterPage() {
     }
 
     return (
-        <div className="min-h-screen bg-[#F9F8F6] grid md:grid-cols-2" data-testid="register-page">
+        <div className="min-h-[100dvh] w-full max-w-full overflow-x-clip bg-[#F9F8F6] grid md:grid-cols-2" data-testid="register-page">
             <div className="hidden md:flex flex-col justify-between p-10 bg-black text-white border-r-2 border-black">
                 <Link to="/" className="font-display text-3xl">Tabler<span className="text-[#FC8019]">.AR</span></Link>
                 <div>
@@ -60,38 +60,38 @@ export default function RegisterPage() {
                     <label className="block mt-6">
                         <span className="text-xs uppercase tracking-widest font-extrabold">Restaurant name</span>
                         <input required value={form.restaurant_name} onChange={(e) => update("restaurant_name", e.target.value)}
-                            className="mt-2 w-full px-4 py-3 hard-border bg-white focus:outline-none focus:ring-2 focus:ring-[#FC8019]"
+                            className="mt-2 w-full px-4 py-3 hard-border bg-white rounded-xl focus:outline-none focus:ring-2 focus:ring-[#FC8019] transition-all"
                             data-testid="register-restaurant-input" />
                     </label>
                     <label className="block mt-4">
                         <span className="text-xs uppercase tracking-widest font-extrabold">Public URL slug</span>
-                        <div className="mt-2 flex items-stretch hard-border bg-white overflow-hidden">
-                            <span className="px-3 flex items-center text-sm text-gray-500 border-r-2 border-black bg-[#FFF3E7]">/m/</span>
+                        <div className="mt-2 flex items-stretch hard-border bg-white rounded-xl overflow-hidden focus-within:ring-2 focus-within:ring-[#FC8019] transition-all">
+                            <span className="px-3 flex items-center text-sm text-gray-500 border-r-2 border-black bg-[#FFF3E7] font-mono">/m/</span>
                             <input required value={form.slug} onChange={(e) => update("slug", slugify(e.target.value))}
-                                className="flex-1 px-4 py-3 focus:outline-none" data-testid="register-slug-input" />
+                                className="flex-1 px-4 py-3 focus:outline-none bg-transparent" data-testid="register-slug-input" />
                         </div>
                     </label>
                     <div className="grid grid-cols-2 gap-4 mt-4">
                         <label className="block">
                             <span className="text-xs uppercase tracking-widest font-extrabold">Your name</span>
                             <input required value={form.name} onChange={(e) => update("name", e.target.value)}
-                                className="mt-2 w-full px-4 py-3 hard-border bg-white focus:outline-none focus:ring-2 focus:ring-[#FC8019]"
+                                className="mt-2 w-full px-4 py-3 hard-border bg-white rounded-xl focus:outline-none focus:ring-2 focus:ring-[#FC8019] transition-all"
                                 data-testid="register-name-input" />
                         </label>
                         <label className="block">
                             <span className="text-xs uppercase tracking-widest font-extrabold">Email</span>
                             <input type="email" required value={form.email} onChange={(e) => update("email", e.target.value)}
-                                className="mt-2 w-full px-4 py-3 hard-border bg-white focus:outline-none focus:ring-2 focus:ring-[#FC8019]"
+                                className="mt-2 w-full px-4 py-3 hard-border bg-white rounded-xl focus:outline-none focus:ring-2 focus:ring-[#FC8019] transition-all"
                                 data-testid="register-email-input" />
                         </label>
                     </div>
                     <label className="block mt-4">
                         <span className="text-xs uppercase tracking-widest font-extrabold">Password (min 6 chars)</span>
                         <input type="password" required minLength={6} value={form.password} onChange={(e) => update("password", e.target.value)}
-                            className="mt-2 w-full px-4 py-3 hard-border bg-white focus:outline-none focus:ring-2 focus:ring-[#FC8019]"
+                            className="mt-2 w-full px-4 py-3 hard-border bg-white rounded-xl focus:outline-none focus:ring-2 focus:ring-[#FC8019] transition-all"
                             data-testid="register-password-input" />
                     </label>
-                    <button type="submit" disabled={loading} className="brand-btn w-full mt-8 px-6 py-4" data-testid="register-submit-btn">
+                    <button type="submit" disabled={loading} className="brand-btn w-full mt-8 px-6 py-4 rounded-xl active:scale-[0.98]" data-testid="register-submit-btn">
                         {loading ? "Creating your restaurant…" : "Launch my restaurant →"}
                     </button>
                 </form>

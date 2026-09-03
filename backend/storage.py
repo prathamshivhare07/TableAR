@@ -59,25 +59,34 @@ def _s3():
     if _s3_client is not None:
         return _s3_client
     import boto3
+    from botocore.client import Config
 
-    if not os.environ.get("S3_BUCKET"):
+    bucket = os.environ.get("S3_BUCKET", "").strip().strip('"\'')
+    if not bucket:
         raise RuntimeError("S3_BUCKET missing (required for STORAGE_PROVIDER=s3)")
 
+    access_key = os.environ.get("S3_ACCESS_KEY_ID", "").strip().strip('"\'')
+    secret_key = os.environ.get("S3_SECRET_ACCESS_KEY", "").strip().strip('"\'')
+    region = os.environ.get("S3_REGION", "us-east-1").strip().strip('"\'')
+
     kwargs = {
-        "aws_access_key_id": os.environ.get("S3_ACCESS_KEY_ID"),
-        "aws_secret_access_key": os.environ.get("S3_SECRET_ACCESS_KEY"),
-        "region_name": os.environ.get("S3_REGION", "us-east-1"),
+        "aws_access_key_id": access_key,
+        "aws_secret_access_key": secret_key,
+        "region_name": region or "us-east-1",
+        "config": Config(s3={"addressing_style": "path"}),
     }
     endpoint = os.environ.get("S3_ENDPOINT_URL")
     if endpoint:
-        kwargs["endpoint_url"] = endpoint
+        endpoint = endpoint.strip().strip('"\'').rstrip("/")
+        if endpoint:
+            kwargs["endpoint_url"] = endpoint
 
     _s3_client = boto3.client("s3", **kwargs)
     return _s3_client
 
 
 def _s3_bucket() -> str:
-    return os.environ["S3_BUCKET"]
+    return os.environ.get("S3_BUCKET", "").strip().strip('"\'')
 
 
 def _s3_put(path: str, data: bytes, ctype: str) -> dict:

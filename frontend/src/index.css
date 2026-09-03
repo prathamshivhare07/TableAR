@@ -26,13 +26,36 @@
     --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
 }
 
+html {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+    -webkit-text-size-adjust: 100%;
+}
+
 body {
     margin: 0;
+    padding: 0;
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+    position: relative;
     font-family: "Manrope", ui-sans-serif, system-ui, sans-serif;
     background: var(--cream);
     color: var(--ink);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+}
+
+#root {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+    position: relative;
+}
+
+*, *::before, *::after {
+    box-sizing: border-box;
 }
 
 .font-display {

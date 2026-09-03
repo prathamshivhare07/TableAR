@@ -108,7 +108,7 @@ export default function DinerMenuPage() {
     }
 
     if (!data) return (
-        <div className="min-h-screen bg-[#F9F8F6] flex items-center justify-center">
+        <div className="min-h-[100dvh] w-full max-w-full overflow-x-clip bg-[#F9F8F6] flex items-center justify-center">
             <div className="font-display text-3xl animate-pulse">Loading…</div>
         </div>
     );
@@ -119,7 +119,7 @@ export default function DinerMenuPage() {
         : data.dishes.filter((d) => d.category_id === selectedCat);
 
     return (
-        <div className="min-h-screen bg-[#F9F8F6] pb-36" data-testid="diner-menu-page">
+        <div className="min-h-[100dvh] w-full max-w-full overflow-x-clip bg-[#F9F8F6] pb-36" data-testid="diner-menu-page">
             {/* Header */}
             <div className="relative">
                 <div className="h-44 md:h-60 bg-black overflow-hidden relative">

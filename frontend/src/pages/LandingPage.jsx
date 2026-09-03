@@ -52,7 +52,7 @@ export default function LandingPage() {
     }
 
     return (
-        <div className="min-h-screen bg-[#F9F8F6] text-[#0A0A0A] selection:bg-[#FC8019] selection:text-white" data-testid="landing-page">
+        <div className="min-h-[100dvh] w-full max-w-full overflow-x-clip bg-[#F9F8F6] text-[#0A0A0A] selection:bg-[#FC8019] selection:text-white" data-testid="landing-page">
             {/* Accessibility: Skip to Content */}
             <a
                 href="#main-content"
@@ -62,9 +62,9 @@ export default function LandingPage() {
             </a>
 
             {/* Top Navigation */}
-            <header className="border-b-2 border-black bg-white/90 backdrop-blur-md sticky top-0 z-40">
-                <div className="max-w-[1400px] mx-auto flex items-center justify-between px-6 py-4">
-                    <Link to="/" className="flex items-center gap-2.5 group" data-testid="brand-link" aria-label="Tabler.AR Home">
+            <header className="border-b-2 border-black bg-white/90 backdrop-blur-md sticky top-0 z-40 w-full max-w-full">
+                <div className="max-w-[1400px] mx-auto flex items-center justify-between px-4 sm:px-6 py-4">
+                    <Link to="/" className="flex items-center gap-2.5 group shrink-0" data-testid="brand-link" aria-label="Tabler.AR Home">
                         <div className="w-10 h-10 bg-[#FC8019] hard-border grid place-items-center group-hover:rotate-6 transition-transform">
                             <ForkKnife size={22} weight="fill" color="#0A0A0A" />
                         </div>
@@ -82,7 +82,7 @@ export default function LandingPage() {
                         </Link>
                     </nav>
 
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2 sm:gap-3 shrink-0">
                         <button
                             onClick={() => nav("/login")}
                             className="hidden sm:inline-flex ghost-btn px-4 py-2 text-xs font-extrabold uppercase tracking-wider rounded"
@@ -92,7 +92,7 @@ export default function LandingPage() {
                         </button>
                         <button
                             onClick={() => nav("/register")}
-                            className="brand-btn px-5 py-2 text-xs font-extrabold uppercase tracking-wider rounded flex items-center gap-1.5"
+                            className="brand-btn px-4 sm:px-5 py-2 text-xs font-extrabold uppercase tracking-wider rounded flex items-center gap-1.5"
                             data-testid="nav-register-btn"
                         >
                             Get Started <ArrowRight size={14} weight="bold" />
@@ -102,7 +102,7 @@ export default function LandingPage() {
             </header>
 
             {/* Neo-brutalist High-Energy Marquee Ribbon */}
-            <div className="bg-[#0A0A0A] text-white overflow-hidden border-b-2 border-black py-2.5 select-none" aria-hidden="true">
+            <div className="bg-[#0A0A0A] text-white overflow-hidden border-b-2 border-black py-2.5 select-none w-full max-w-full" aria-hidden="true">
                 <div className="marquee whitespace-nowrap">
                     {Array.from({ length: 2 }).map((_, i) => (
                         <div key={i} className="flex items-center gap-12 pr-12">
@@ -124,41 +124,41 @@ export default function LandingPage() {
                 </div>
             </div>
 
-            <main id="main-content">
-                {/* Hero Section — Asymmetric Tetris Grid with Ambient Depth */}
-                <section className="relative overflow-hidden border-b-2 border-black dot-grid-subtle">
-                    <div className="max-w-[1400px] mx-auto px-6 py-14 md:py-24 grid grid-cols-12 gap-8 items-center">
-                        <div className="col-span-12 lg:col-span-7 z-10">
-                            <div className="flex items-center gap-2 mb-4">
+            <main id="main-content" className="w-full max-w-full overflow-x-clip">
+                {/* Hero Section */}
+                <section className="relative overflow-hidden border-b-2 border-black dot-grid-subtle w-full max-w-full">
+                    <div className="max-w-[1400px] mx-auto px-4 sm:px-6 py-10 sm:py-14 md:py-24 grid grid-cols-12 gap-6 md:gap-8 items-center">
+                        <div className="col-span-12 lg:col-span-7 z-10 min-w-0">
+                            <div className="flex items-center gap-2 mb-4 flex-wrap">
                                 <Chip tone="orange">✦ WebAR × Table Ordering</Chip>
                                 <span className="text-xs font-extrabold uppercase tracking-widest text-gray-600 hidden sm:inline">
                                     Instant Mobile Browser Experience
                                 </span>
                             </div>
 
-                            <h1 className="font-display text-[56px] sm:text-[76px] md:text-[98px] leading-[0.92] tracking-tight text-balance">
+                            <h1 className="font-display text-[42px] sm:text-[68px] md:text-[88px] lg:text-[98px] leading-[0.92] tracking-tight break-words">
                                 Kill the <br />
-                                <span className="bg-[#FC8019] text-white px-3.5 inline-block -ml-1 hard-border shadow-[4px_4px_0px_0px_#0A0A0A] rotate-[-1deg]">
+                                <span className="bg-[#FC8019] text-white px-2.5 sm:px-3.5 inline-block hard-border shadow-[3px_3px_0px_0px_#0A0A0A] sm:shadow-[4px_4px_0px_0px_#0A0A0A] rotate-[-1deg] origin-left">
                                     Menu.
                                 </span><br />
                                 Project the <span className="italic font-normal font-serif text-[#0A0A0A]">experience.</span>
                             </h1>
 
-                            <p className="mt-6 text-base md:text-lg max-w-xl text-gray-700 font-medium leading-relaxed text-balance">
+                            <p className="mt-5 sm:mt-6 text-sm sm:text-base md:text-lg max-w-xl text-gray-700 font-medium leading-relaxed">
                                 A restaurant ordering OS designed to eliminate dining anxiety. Diners scan a table QR code, preview dishes in 1:1 photorealistic WebAR right on their physical table, and place orders directly to a live WebSocket Kitchen Display System.
                             </p>
 
-                            <div className="mt-8 flex flex-wrap gap-4">
+                            <div className="mt-7 sm:mt-8 flex flex-wrap gap-3 sm:gap-4">
                                 <button
                                     onClick={() => nav("/register")}
-                                    className="brand-btn px-7 py-4 text-sm font-extrabold tracking-wider rounded"
+                                    className="brand-btn px-6 sm:px-7 py-3.5 sm:py-4 text-xs sm:text-sm font-extrabold tracking-wider rounded"
                                     data-testid="hero-cta-register"
                                 >
-                                    Start Free — No Credit Card
+                                    Start Free - No Credit Card
                                 </button>
                                 <button
                                     onClick={() => nav("/m/spice-route")}
-                                    className="ghost-btn px-6 py-4 text-sm font-extrabold tracking-wider rounded inline-flex items-center gap-2"
+                                    className="ghost-btn px-5 sm:px-6 py-3.5 sm:py-4 text-xs sm:text-sm font-extrabold tracking-wider rounded inline-flex items-center gap-2"
                                     data-testid="hero-cta-demo"
                                 >
                                     Try Diner WebAR Demo <ArrowUpRight size={18} weight="bold" />
@@ -166,7 +166,7 @@ export default function LandingPage() {
                             </div>
 
                             {/* Trust Signals */}
-                            <div className="mt-10 pt-6 border-t border-black/10 flex flex-wrap items-center gap-3">
+                            <div className="mt-8 sm:mt-10 pt-6 border-t border-black/10 flex flex-wrap items-center gap-2.5 sm:gap-3">
                                 <span className="tag text-[11px] font-bold"><DeviceMobile size={14} weight="bold" /> No App Download</span>
                                 <span className="tag text-[11px] font-bold"><Cube size={14} weight="bold" /> &lt;15MB Fast GLB</span>
                                 <span className="tag text-[11px] font-bold"><Storefront size={14} weight="bold" /> Multi-Tenant</span>
@@ -175,9 +175,9 @@ export default function LandingPage() {
                         </div>
 
                         {/* Right: Live Interactive 3D Card with Model Switcher */}
-                        <div className="col-span-12 lg:col-span-5 z-10">
-                            <div className="hard-border bg-white p-5 hard-shadow-lg rounded-lg relative">
-                                <div className="flex items-center justify-between mb-3">
+                        <div className="col-span-12 lg:col-span-5 z-10 min-w-0">
+                            <div className="hard-border bg-white p-4 sm:p-5 hard-shadow-lg rounded-lg relative max-w-full">
+                                <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
                                     <div className="flex items-center gap-2">
                                         <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-[#FC8019] text-white text-[10px] font-extrabold uppercase tracking-wider rounded border border-black">
                                             <Cube size={13} weight="bold" /> Live 3D Canvas
@@ -217,9 +217,9 @@ export default function LandingPage() {
                                 </div>
 
                                 {/* Switch Models Bar */}
-                                <div className="mt-3 pt-3 border-t border-black/10 flex items-center justify-between">
+                                <div className="mt-3 pt-3 border-t border-black/10 flex flex-wrap items-center justify-between gap-2">
                                     <span className="text-[10px] uppercase tracking-wider font-extrabold text-gray-500">Sample Models:</span>
-                                    <div className="flex gap-1.5">
+                                    <div className="flex flex-wrap gap-1.5">
                                         {HERO_MODELS.map((m, idx) => (
                                             <button
                                                 key={m.name}
@@ -240,9 +240,10 @@ export default function LandingPage() {
                     </div>
                 </section>
 
+
                 {/* How It Works — Sequential Value Steps */}
-                <section id="how" className="border-b-2 border-black bg-white">
-                    <div className="max-w-[1400px] mx-auto px-6 py-16 md:py-24">
+                <section id="how" className="border-b-2 border-black bg-white w-full max-w-full">
+                    <div className="max-w-[1400px] mx-auto px-4 sm:px-6 py-14 md:py-24">
                         <div className="flex items-end justify-between flex-wrap gap-4 mb-12">
                             <div>
                                 <Chip tone="orange">The 4-Step Journey</Chip>
@@ -308,31 +309,31 @@ export default function LandingPage() {
                 </section>
 
                 {/* Features Section — High Architectural Confidence */}
-                <section id="features" className="border-b-2 border-black bg-[#F9F8F6]">
-                    <div className="max-w-[1400px] mx-auto px-6 py-16 md:py-24 grid grid-cols-12 gap-8 items-start">
-                        <div className="col-span-12 md:col-span-4">
+                <section id="features" className="border-b-2 border-black bg-[#F9F8F6] w-full max-w-full">
+                    <div className="max-w-[1400px] mx-auto px-4 sm:px-6 py-14 md:py-24 grid grid-cols-12 gap-8 items-start">
+                        <div className="col-span-12 md:col-span-4 min-w-0">
                             <Chip tone="orange">Enterprise Ready</Chip>
-                            <h2 className="font-display text-4xl md:text-6xl mt-3 tracking-tight leading-tight">
+                            <h2 className="font-display text-3xl sm:text-4xl md:text-6xl mt-3 tracking-tight leading-tight">
                                 Every Brand. <br />
                                 One Isolated Codebase.
                             </h2>
-                            <p className="mt-5 text-gray-700 font-medium text-sm md:text-base leading-relaxed text-balance">
+                            <p className="mt-5 text-gray-700 font-medium text-sm md:text-base leading-relaxed">
                                 Built with strict server-side multi-tenancy. Every query and WebSocket stream filters by authenticated <code className="bg-white px-1.5 py-0.5 rounded border border-black/20 text-xs font-mono">tenant_id</code> to isolate menus, orders, and sales data.
                             </p>
                             <div className="mt-8 space-y-3">
                                 <div className="flex items-center gap-2.5 text-xs font-extrabold uppercase tracking-wider text-gray-800">
-                                    <Check size={18} weight="bold" className="text-[#00C244]" /> Sub-second WebSocket dispatch
+                                    <Check size={18} weight="bold" className="text-[#00C244] shrink-0" /> Sub-second WebSocket dispatch
                                 </div>
                                 <div className="flex items-center gap-2.5 text-xs font-extrabold uppercase tracking-wider text-gray-800">
-                                    <Check size={18} weight="bold" className="text-[#00C244]" /> Automated printable table QR sets
+                                    <Check size={18} weight="bold" className="text-[#00C244] shrink-0" /> Automated printable table QR sets
                                 </div>
                                 <div className="flex items-center gap-2.5 text-xs font-extrabold uppercase tracking-wider text-gray-800">
-                                    <Check size={18} weight="bold" className="text-[#00C244]" /> Human-in-the-loop video to 3D pipeline
+                                    <Check size={18} weight="bold" className="text-[#00C244] shrink-0" /> Human-in-the-loop video to 3D pipeline
                                 </div>
                             </div>
                         </div>
 
-                        <div className="col-span-12 md:col-span-8 grid grid-cols-1 sm:grid-cols-2 gap-6">
+                        <div className="col-span-12 md:col-span-8 grid grid-cols-1 sm:grid-cols-2 gap-6 min-w-0">
                             {[
                                 {
                                     title: "Video-to-3D Pipeline",
@@ -361,7 +362,7 @@ export default function LandingPage() {
                             ].map((f) => (
                                 <div
                                     key={f.title}
-                                    className="hard-border bg-white p-6 rounded-lg hard-shadow-sm flex flex-col justify-between hover:bg-[#FFF3E7] transition-all duration-200"
+                                    className="hard-border bg-white p-5 sm:p-6 rounded-lg hard-shadow-sm flex flex-col justify-between hover:bg-[#FFF3E7] transition-all duration-200 min-w-0 max-w-full"
                                 >
                                     <div>
                                         <div className="flex items-center justify-between mb-3">
@@ -381,15 +382,15 @@ export default function LandingPage() {
                     </div>
                 </section>
 
-                {/* Pricing Section — Cohesive Warm Palette (Replaced Generic Dark Jump) */}
-                <section id="pricing" className="border-b-2 border-black bg-white">
-                    <div className="max-w-[1400px] mx-auto px-6 py-16 md:py-24">
-                        <div className="text-center max-w-2xl mx-auto mb-14">
+                {/* Pricing Section — Cohesive Warm Palette */}
+                <section id="pricing" className="border-b-2 border-black bg-white w-full max-w-full">
+                    <div className="max-w-[1400px] mx-auto px-4 sm:px-6 py-14 md:py-24">
+                        <div className="text-center max-w-2xl mx-auto mb-12 sm:mb-14">
                             <Chip tone="orange">Transparent Plans</Chip>
-                            <h2 className="font-display text-5xl md:text-7xl mt-3 tracking-tight">
+                            <h2 className="font-display text-4xl sm:text-5xl md:text-7xl mt-3 tracking-tight">
                                 Simple. Scalable. Fair.
                             </h2>
-                            <p className="text-gray-600 font-medium mt-3 text-sm md:text-base text-balance">
+                            <p className="text-gray-600 font-medium mt-3 text-sm md:text-base">
                                 Start free today. Upgrade when your restaurant is ready to roll out 3D models across the full catalog.
                             </p>
                         </div>
@@ -445,14 +446,14 @@ export default function LandingPage() {
                             ].map((p) => (
                                 <div
                                     key={p.name}
-                                    className={`p-8 border-2 hard-border rounded-lg flex flex-col justify-between transition-all duration-200 ${
+                                    className={`p-6 sm:p-8 border-2 hard-border rounded-lg flex flex-col justify-between transition-all duration-200 min-w-0 max-w-full ${
                                         p.featured
                                             ? "bg-[#FFF3E7] hard-shadow-lg scale-100 md:-translate-y-2 relative"
                                             : "bg-[#F9F8F6] hard-shadow-sm hover:hard-shadow"
                                     }`}
                                 >
                                     {p.featured && (
-                                        <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-[#FC8019] text-white border-2 border-black px-3.5 py-0.5 rounded text-[11px] font-black uppercase tracking-wider shadow-sm">
+                                        <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-[#FC8019] text-white border-2 border-black px-3.5 py-0.5 rounded text-[11px] font-black uppercase tracking-wider shadow-sm whitespace-nowrap">
                                             Most Popular Choice
                                         </div>
                                     )}
@@ -484,7 +485,7 @@ export default function LandingPage() {
 
                                     <button
                                         onClick={() => nav("/register")}
-                                        className={`mt-8 w-full py-4 text-xs font-extrabold uppercase tracking-wider rounded border-2 border-black transition-all active:scale-[0.98] ${
+                                        className={`mt-8 w-full py-3.5 sm:py-4 text-xs font-extrabold uppercase tracking-wider rounded border-2 border-black transition-all active:scale-[0.98] ${
                                             p.featured
                                                 ? "brand-btn text-white shadow-[4px_4px_0px_0px_#0A0A0A]"
                                                 : "ghost-btn text-black shadow-[3px_3px_0px_0px_#0A0A0A]"
@@ -500,8 +501,8 @@ export default function LandingPage() {
             </main>
 
             {/* Comprehensive Footer with Legal, Product Links & Status */}
-            <footer className="border-t-2 border-black bg-[#F9F8F6]">
-                <div className="max-w-[1400px] mx-auto px-6 py-12">
+            <footer className="border-t-2 border-black bg-[#F9F8F6] w-full max-w-full">
+                <div className="max-w-[1400px] mx-auto px-4 sm:px-6 py-12">
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-8 pb-10 border-b border-black/15">
                         <div className="md:col-span-2">
                             <div className="flex items-center gap-2.5">

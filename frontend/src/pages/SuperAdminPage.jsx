@@ -8,9 +8,9 @@ import ModelViewer from "../components/ModelViewer";
 
 function StatBox({ label, value }) {
     return (
-        <div className="hard-border bg-white p-5">
+        <div className="hard-border bg-white p-5 transition-transform hover:-translate-y-0.5 hover:hard-shadow">
             <div className="text-[10px] uppercase tracking-widest font-extrabold text-gray-500">{label}</div>
-            <div className="font-display text-4xl mt-1">{value ?? "—"}</div>
+            <div className="font-display text-4xl mt-1 tabular-nums">{value ?? "-"}</div>
         </div>
     );
 }
@@ -44,7 +44,7 @@ export default function SuperAdminPage() {
     }, [user, nav]);
 
     return (
-        <div className="min-h-screen bg-[#F9F8F6]" data-testid="superadmin-page">
+        <div className="min-h-[100dvh] bg-[#F9F8F6]" data-testid="superadmin-page">
             <header className="border-b-2 border-black bg-black text-white sticky top-0 z-30">
                 <div className="max-w-[1400px] mx-auto px-6 py-4 flex items-center justify-between">
                     <div className="flex items-center gap-6">
@@ -190,15 +190,15 @@ function UploadGlbModal({ dish, onClose, onDone }) {
             const r = await http.post(`/superadmin/dishes/${dish.id}/upload-model`, fd, {
                 headers: { "Content-Type": "multipart/form-data" },
             });
-            toast.success("3D model uploaded — live on diner menu");
+            toast.success("3D model uploaded: live on diner menu");
             onDone();
         } catch (e) {
             toast.error(formatApiError(e, "Upload failed"));
         } finally { setUploading(false); }
     }
     return (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" data-testid="super-upload-modal">
-            <div className="bg-white hard-border hard-shadow-lg w-full max-w-lg p-6">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 backdrop-fade" data-testid="super-upload-modal">
+            <div className="bg-white hard-border hard-shadow-lg w-full max-w-lg p-6 modal-enter">
                 <div className="flex items-center justify-between">
                     <div>
                         <div className="text-[10px] uppercase tracking-widest font-extrabold text-[#FC8019]">Upload 3D model</div>

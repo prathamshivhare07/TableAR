@@ -12,9 +12,9 @@ import ModelViewer from "../components/ModelViewer";
 
 function StatBox({ label, value, sub }) {
     return (
-        <div className="hard-border bg-white p-5">
+        <div className="hard-border bg-white p-5 transition-transform hover:-translate-y-0.5 hover:hard-shadow">
             <div className="text-[10px] uppercase tracking-widest font-extrabold text-gray-500">{label}</div>
-            <div className="font-display text-4xl mt-1">{value}</div>
+            <div className="font-display text-4xl mt-1 tabular-nums tracking-tight text-[#0A0A0A]">{value}</div>
             {sub && <div className="text-xs text-gray-600 font-medium mt-1">{sub}</div>}
         </div>
     );
@@ -98,7 +98,7 @@ export default function DashboardPage() {
     const menuUrl = tenant ? `${window.location.origin}/m/${tenant.slug}` : "";
 
     return (
-        <div className="min-h-screen bg-[#F9F8F6] flex" data-testid="dashboard-page">
+        <div className="min-h-[100dvh] bg-[#F9F8F6] flex" data-testid="dashboard-page">
             {/* Sidebar */}
             <aside className="w-64 border-r-2 border-black bg-white p-6 hidden md:flex flex-col justify-between sticky top-0 h-screen">
                 <div>
@@ -191,9 +191,9 @@ function OverviewTab({ analytics, orders, dishes }) {
                 <h1 className="font-display text-5xl mt-1">Command center</h1>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <StatBox label="Revenue today" value={analytics ? `$${analytics.revenue_today.toFixed(2)}` : "—"} sub={analytics ? `${analytics.orders_today} orders` : ""} />
-                <StatBox label="Revenue · 7d" value={analytics ? `$${analytics.revenue_week.toFixed(2)}` : "—"} sub={analytics ? `${analytics.orders_week} orders` : ""} />
-                <StatBox label="Avg ticket" value={analytics ? `$${analytics.avg_ticket.toFixed(2)}` : "—"} />
+                <StatBox label="Revenue today" value={analytics ? `$${analytics.revenue_today.toFixed(2)}` : "-"} sub={analytics ? `${analytics.orders_today} orders` : ""} />
+                <StatBox label="Revenue · 7d" value={analytics ? `$${analytics.revenue_week.toFixed(2)}` : "-"} sub={analytics ? `${analytics.orders_week} orders` : ""} />
+                <StatBox label="Avg ticket" value={analytics ? `$${analytics.avg_ticket.toFixed(2)}` : "-"} />
                 <StatBox label="3D models" value={`${ready3d}/${dishes.length}`} sub={pending3d ? `${pending3d} pending` : "All ready"} />
             </div>
 
@@ -385,8 +385,8 @@ function CategoriesModal({ categories, onClose, onChanged }) {
     }
 
     return (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" data-testid="categories-modal">
-            <div className="bg-white hard-border hard-shadow-lg w-full max-w-xl p-6 max-h-[92vh] flex flex-col">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 backdrop-fade" data-testid="categories-modal">
+            <div className="bg-white hard-border hard-shadow-lg w-full max-w-xl p-6 max-h-[92vh] flex flex-col modal-enter">
                 <div className="flex items-center justify-between mb-4">
                     <div>
                         <div className="text-[10px] uppercase tracking-widest font-extrabold text-[#FC8019]">Menu</div>
@@ -412,7 +412,7 @@ function CategoriesModal({ categories, onClose, onChanged }) {
                 <div className="flex-1 overflow-y-auto scroll-thin">
                     <div className="text-[10px] uppercase tracking-widest font-extrabold mb-2">Existing ({categories.length})</div>
                     {categories.length === 0 ? (
-                        <div className="text-sm text-gray-500 py-6 text-center">No categories yet — add your first above.</div>
+                        <div className="text-sm text-gray-500 py-6 text-center">No categories yet: add your first above.</div>
                     ) : (
                         <div className="space-y-2">
                             {categories.map((c) => (
@@ -452,7 +452,7 @@ function VideoUploadModal({ dish, onClose, onDone }) {
             await http.post(`/tenant/dishes/${dish.id}/upload-video`, fd, {
                 headers: { "Content-Type": "multipart/form-data" },
             });
-            toast.success("Video uploaded — queued for 3D review");
+            toast.success("Video uploaded: queued for 3D review");
             onDone();
         } catch (e) {
             toast.error(formatApiError(e, "Upload failed"));
@@ -460,13 +460,13 @@ function VideoUploadModal({ dish, onClose, onDone }) {
     }
 
     return (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" data-testid="video-upload-modal">
-            <div className="bg-white hard-border hard-shadow-lg w-full max-w-lg p-6">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 backdrop-fade" data-testid="video-upload-modal">
+            <div className="bg-white hard-border hard-shadow-lg w-full max-w-lg p-6 modal-enter">
                 <div className="flex items-center justify-between">
                     <div className="font-display text-3xl">Upload dish video</div>
                     <button onClick={onClose} className="text-sm font-bold" data-testid="close-video-modal">✕</button>
                 </div>
-                <p className="text-sm text-gray-700 mt-2">Walk around the dish for ~10 sec. .mp4, .mov, .webm — max 60MB. Our team crafts a WebAR-ready .glb and pushes it live.</p>
+                <p className="text-sm text-gray-700 mt-2">Walk around the dish for ~10 sec. .mp4, .mov, .webm · max 60MB. Our team crafts a WebAR-ready .glb and pushes it live.</p>
                 <label className="mt-6 block border-2 border-dashed border-black p-8 text-center cursor-pointer bg-[#FFF3E7] hover:bg-[#FFE9D0] transition-colors">
                     <input type="file" accept="video/mp4,video/quicktime,video/webm" className="hidden" onChange={(e) => setFile(e.target.files?.[0] || null)} data-testid="video-file-input" />
                     <VideoCamera size={36} weight="bold" className="mx-auto" />
@@ -644,23 +644,23 @@ function OrdersTab({ orders, onChanged }) {
                     </thead>
                     <tbody>
                         {orders.map((o) => (
-                            <tr key={o.id} className="border-t-2 border-black" data-testid={`order-row-${o.order_no}`}>
+                            <tr key={o.id} className="border-t-2 border-black hover:bg-[#FFF3E7]/60 transition-colors" data-testid={`order-row-${o.order_no}`}>
                                 <td className="px-4 py-3 font-display text-xl">{o.order_no}</td>
-                                <td className="px-4 py-3 font-bold">{o.table_code || "—"}</td>
-                                <td className="px-4 py-3">{o.items.reduce((a, i) => a + i.qty, 0)}</td>
-                                <td className="px-4 py-3 font-display text-lg">${o.total.toFixed(2)}</td>
+                                <td className="px-4 py-3 font-bold">{o.table_code ? `Table ${o.table_code}` : "Takeaway"}</td>
+                                <td className="px-4 py-3 tabular-nums font-semibold">{o.items.reduce((a, i) => a + i.qty, 0)}</td>
+                                <td className="px-4 py-3 font-display text-lg tabular-nums text-[#0A0A0A]">${o.total.toFixed(2)}</td>
                                 <td className="px-4 py-3"><span className="tag">{o.status}</span></td>
                                 <td className="px-4 py-3">
-                                    <div className="flex gap-1">
+                                    <div className="flex gap-1.5 flex-wrap">
                                         {["preparing", "ready", "served", "cancelled"].map((s) => (
-                                            <button key={s} onClick={() => setStatus(o, s)} className="text-[10px] px-2 py-1 border-2 border-black hover:bg-[#FC8019] hover:text-white transition-colors" data-testid={`set-${s}-${o.order_no}`}>{s}</button>
+                                            <button key={s} onClick={() => setStatus(o, s)} className="text-[10px] px-2.5 py-1 border-2 border-black font-extrabold uppercase tracking-wider bg-white hover:bg-[#FC8019] hover:text-white active:scale-95 transition-all" data-testid={`set-${s}-${o.order_no}`}>{s}</button>
                                         ))}
                                     </div>
                                 </td>
                             </tr>
                         ))}
                         {orders.length === 0 && (
-                            <tr><td colSpan={6} className="px-4 py-10 text-center text-gray-500">No orders yet.</td></tr>
+                            <tr><td colSpan={6} className="px-4 py-12 text-center text-gray-500 font-medium">No orders recorded yet.</td></tr>
                         )}
                     </tbody>
                 </table>

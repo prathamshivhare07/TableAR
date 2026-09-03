@@ -21,6 +21,26 @@
     --danger: #FF3B30;
     --kds-bg: #0A0A0A;
     --kds-surface: #141414;
+    caret-color: var(--brand);
+
+    /* Emil Kowalski custom curves */
+    --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+    --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+    --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+::selection {
+    background: var(--brand);
+    color: #FFFFFF;
+}
+::-moz-selection {
+    background: var(--brand);
+    color: #FFFFFF;
+}
+
+:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--cream), 0 0 0 4px var(--brand);
 }
 
 body {
@@ -37,6 +57,12 @@ body {
     letter-spacing: -0.01em;
     line-height: 0.95;
     text-transform: uppercase;
+    font-feature-settings: "tnum" 1;
+}
+
+.tabular-nums {
+    font-feature-settings: "tnum" 1;
+    font-variant-numeric: tabular-nums;
 }
 
 .hard-shadow {
@@ -60,13 +86,13 @@ body {
     font-weight: 800;
     text-transform: uppercase;
     letter-spacing: 0.02em;
-    transition: transform 0.12s ease, box-shadow 0.12s ease, background-color 0.12s ease;
+    transition: transform 160ms var(--ease-out), box-shadow 160ms var(--ease-out), background-color 160ms var(--ease-out);
 }
 .brand-btn:hover:not(:disabled) {
     background: var(--brand-hover);
 }
 .brand-btn:active:not(:disabled) {
-    transform: translate(3px, 3px);
+    transform: scale(0.97) translate(2px, 2px);
     box-shadow: 1px 1px 0 0 var(--ink);
 }
 .brand-btn:disabled {
@@ -80,13 +106,13 @@ body {
     border: 2px solid var(--ink);
     box-shadow: 4px 4px 0 0 var(--ink);
     font-weight: 700;
-    transition: transform 0.12s ease, box-shadow 0.12s ease, background-color 0.12s ease;
+    transition: transform 160ms var(--ease-out), box-shadow 160ms var(--ease-out), background-color 160ms var(--ease-out);
 }
 .ghost-btn:hover {
     background: #FFF3E7;
 }
 .ghost-btn:active {
-    transform: translate(3px, 3px);
+    transform: scale(0.97) translate(2px, 2px);
     box-shadow: 1px 1px 0 0 var(--ink);
 }
 
@@ -97,13 +123,13 @@ body {
     font-weight: 800;
     text-transform: uppercase;
     letter-spacing: 0.04em;
-    transition: transform 0.12s ease, background-color 0.12s ease;
+    transition: transform 160ms var(--ease-out), background-color 160ms var(--ease-out);
 }
 .pill-btn:hover {
     background: #1a1a1a;
 }
 .pill-btn:active {
-    transform: scale(0.96);
+    transform: scale(0.97);
 }
 
 .pill-orange {
@@ -113,13 +139,13 @@ body {
     font-weight: 800;
     text-transform: uppercase;
     letter-spacing: 0.04em;
-    transition: transform 0.12s ease, background-color 0.12s ease;
+    transition: transform 160ms var(--ease-out), background-color 160ms var(--ease-out);
 }
 .pill-orange:hover {
     background: var(--brand-hover);
 }
 .pill-orange:active {
-    transform: scale(0.96);
+    transform: scale(0.97);
 }
 
 .tag {
@@ -185,21 +211,65 @@ body {
 }
 
 .fade-in {
-    animation: fadein 320ms ease both;
+    animation: fadeIn 220ms var(--ease-out) both;
 }
-@keyframes fadein {
+@keyframes fadeIn {
     from { opacity: 0; transform: translateY(6px); }
     to { opacity: 1; transform: translateY(0); }
 }
-.stagger > * { animation: fadein 340ms ease both; }
-.stagger > *:nth-child(1) { animation-delay: 40ms; }
-.stagger > *:nth-child(2) { animation-delay: 80ms; }
-.stagger > *:nth-child(3) { animation-delay: 120ms; }
-.stagger > *:nth-child(4) { animation-delay: 160ms; }
-.stagger > *:nth-child(5) { animation-delay: 200ms; }
-.stagger > *:nth-child(6) { animation-delay: 240ms; }
-.stagger > *:nth-child(7) { animation-delay: 280ms; }
-.stagger > *:nth-child(8) { animation-delay: 320ms; }
+
+.backdrop-fade {
+    animation: backdropFade 180ms var(--ease-out) both;
+}
+@keyframes backdropFade {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* Emil Kowalski drawer slide-up with custom ease-drawer */
+.drawer-enter {
+    animation: drawerEnter 280ms var(--ease-drawer) both;
+}
+@keyframes drawerEnter {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+}
+
+/* Emil Kowalski modal entry: natural scale(0.95), never scale(0) */
+.modal-enter {
+    animation: modalEnter 220ms var(--ease-out) both;
+    transform-origin: center;
+}
+@keyframes modalEnter {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.stagger > * { animation: fadeIn 280ms var(--ease-out) both; }
+.stagger > *:nth-child(1) { animation-delay: 30ms; }
+.stagger > *:nth-child(2) { animation-delay: 60ms; }
+.stagger > *:nth-child(3) { animation-delay: 90ms; }
+.stagger > *:nth-child(4) { animation-delay: 120ms; }
+.stagger > *:nth-child(5) { animation-delay: 150ms; }
+.stagger > *:nth-child(6) { animation-delay: 180ms; }
+.stagger > *:nth-child(7) { animation-delay: 210ms; }
+.stagger > *:nth-child(8) { animation-delay: 240ms; }
+
+/* Reduced motion accessibility */
+@media (prefers-reduced-motion: reduce) {
+    *, ::before, ::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
 
 /* model-viewer overrides */
 model-viewer {
@@ -210,10 +280,21 @@ model-viewer {
 }
 
 /* Scrollbar polish */
-.scroll-thin::-webkit-scrollbar { width: 8px; height: 8px; }
+.scroll-thin::-webkit-scrollbar { width: 6px; height: 6px; }
+.scroll-thin::-webkit-scrollbar-track { background: transparent; }
 .scroll-thin::-webkit-scrollbar-thumb {
-    background: rgba(0, 0, 0, 0.2);
-    border-radius: 8px;
+    background: rgba(0, 0, 0, 0.18);
+    border-radius: 9999px;
+}
+.scroll-thin::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 0, 0, 0.32);
+}
+
+.kds-body .scroll-thin::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.15);
+}
+.kds-body .scroll-thin::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.28);
 }
 
 @layer base {

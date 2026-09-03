@@ -19,10 +19,10 @@ function Chip({ children, tone = "ink" }) {
 export default function LandingPage() {
     const nav = useNavigate();
     return (
-        <div className="min-h-screen bg-[#F9F8F6] text-black" data-testid="landing-page">
+        <div className="min-h-[100dvh] bg-[#F9F8F6] text-black" data-testid="landing-page">
             {/* Top nav */}
-            <header className="border-b-2 border-black">
-                <div className="max-w-[1400px] mx-auto flex items-center justify-between px-6 py-4">
+            <header className="border-b-2 border-black bg-white sticky top-0 z-30">
+                <div className="max-w-[1400px] mx-auto flex items-center justify-between px-6 py-4 h-18">
                     <Link to="/" className="flex items-center gap-2" data-testid="brand-link">
                         <div className="w-10 h-10 bg-[#FC8019] hard-border grid place-items-center">
                             <ForkKnife size={22} weight="fill" color="#0A0A0A" />
@@ -35,8 +35,8 @@ export default function LandingPage() {
                         <a href="#pricing" className="hover:text-[#FC8019] transition-colors">Pricing</a>
                     </nav>
                     <div className="flex items-center gap-3">
-                        <button onClick={() => nav("/login")} className="hidden sm:inline-flex ghost-btn px-4 py-2 text-sm" data-testid="nav-login-btn">Log in</button>
-                        <button onClick={() => nav("/register")} className="brand-btn px-4 py-2 text-sm" data-testid="nav-register-btn">Get started →</button>
+                        <button onClick={() => nav("/login")} className="hidden sm:inline-flex ghost-btn px-4 py-2 text-sm active:scale-95" data-testid="nav-login-btn">Log in</button>
+                        <button onClick={() => nav("/register")} className="brand-btn px-4 py-2 text-sm active:scale-95" data-testid="nav-register-btn">Get started →</button>
                     </div>
                 </div>
             </header>
@@ -56,31 +56,25 @@ export default function LandingPage() {
                 </div>
             </div>
 
-            {/* Hero — asymmetric Tetris grid */}
-            <section className="max-w-[1400px] mx-auto px-6 py-14 md:py-24 grid grid-cols-12 gap-6">
+            {/* Hero */}
+            <section className="max-w-[1400px] mx-auto px-6 py-12 md:py-20 grid grid-cols-12 gap-6 items-center">
                 <div className="col-span-12 lg:col-span-7">
                     <Chip tone="orange">✦ QR × WebAR × KDS</Chip>
-                    <h1 className="font-display text-[64px] md:text-[112px] mt-5 leading-[0.9]">
+                    <h1 className="font-display text-[60px] md:text-[104px] mt-4 leading-[0.92] tracking-tight">
                         Kill the<br/>
-                        <span className="bg-[#FC8019] px-3 inline-block -ml-1 hard-border">Menu.</span><br/>
-                        Serve the <span className="italic font-normal font-serif">experience.</span>
+                        <span className="bg-[#FC8019] px-3 inline-block -ml-1 hard-border text-white">Menu.</span><br/>
+                        Serve the <span className="text-[#FC8019]">experience.</span>
                     </h1>
-                    <p className="mt-6 text-base md:text-lg max-w-xl text-gray-700 font-medium">
-                        A B2B ordering OS for restaurants. Diners scan a QR, preview dishes in 1:1 WebAR right on their table, order in seconds — and the kitchen sees the ticket instantly on a real-time KDS.
+                    <p className="mt-5 text-base md:text-lg max-w-xl text-gray-700 font-medium leading-relaxed">
+                        App-free QR ordering with 1:1 WebAR dish previews on diner tables, streamed live to kitchen display systems.
                     </p>
                     <div className="mt-8 flex flex-wrap gap-4">
-                        <button onClick={() => nav("/register")} className="brand-btn px-6 py-4 text-base" data-testid="hero-cta-register">
-                            Start free — no card
+                        <button onClick={() => nav("/register")} className="brand-btn px-6 py-4 text-base active:scale-[0.98]" data-testid="hero-cta-register">
+                            Start free - no card
                         </button>
-                        <button onClick={() => nav("/m/spice-route")} className="ghost-btn px-6 py-4 text-base inline-flex items-center gap-2" data-testid="hero-cta-demo">
+                        <button onClick={() => nav("/m/spice-route")} className="ghost-btn px-6 py-4 text-base inline-flex items-center gap-2 active:scale-[0.98]" data-testid="hero-cta-demo">
                             Try the diner demo <ArrowUpRight size={18} weight="bold" />
                         </button>
-                    </div>
-                    <div className="mt-10 flex flex-wrap items-center gap-3">
-                        <Chip>No app download</Chip>
-                        <Chip>&lt;15MB models</Chip>
-                        <Chip>Multi-tenant</Chip>
-                        <Chip>WebSocket KDS</Chip>
                     </div>
                 </div>
 
@@ -88,18 +82,24 @@ export default function LandingPage() {
                 <div className="col-span-12 lg:col-span-5">
                     <div className="hard-border bg-white p-4 hard-shadow-lg relative">
                         <div className="flex items-center justify-between mb-3">
-                            <div className="tag"><Cube size={14} weight="bold" /> Live 3D</div>
-                            <div className="text-xs font-bold uppercase tracking-widest text-gray-500">Try it →</div>
+                            <div className="tag"><Cube size={14} weight="bold" /> Live 3D Model</div>
+                            <div className="text-[11px] font-extrabold uppercase tracking-widest text-[#FC8019] flex items-center gap-1">
+                                Drag to rotate ✦
+                            </div>
                         </div>
-                        <div className="aspect-[4/5] bg-[#FFF3E7] hard-border overflow-hidden">
+                        <div className="aspect-[4/5] bg-[#FFF3E7] hard-border overflow-hidden relative">
                             <ModelViewer src={SAMPLE_MODEL} className="w-full h-full" />
+                            <div className="absolute bottom-2 left-2 right-2 px-2.5 py-1.5 bg-black/75 backdrop-blur-sm text-white text-[11px] font-bold uppercase tracking-wider rounded flex items-center justify-between pointer-events-none">
+                                <span>1:1 True Scale Preview</span>
+                                <span className="text-[#FC8019]">WebAR Ready</span>
+                            </div>
                         </div>
                         <div className="flex items-center justify-between mt-4">
                             <div>
-                                <div className="font-display text-2xl">Truffle Smash</div>
-                                <div className="text-xs text-gray-600 font-semibold">Signature Burger · 3D + AR</div>
+                                <div className="font-display text-2xl tracking-tight">Truffle Smash</div>
+                                <div className="text-xs text-gray-600 font-semibold mt-0.5">Signature Brioche Burger · 3D + AR</div>
                             </div>
-                            <div className="pill-orange px-4 py-2 text-sm">$14.50</div>
+                            <div className="pill-orange px-4 py-2 text-sm shadow-sm">$14.50</div>
                         </div>
                     </div>
                 </div>
@@ -110,10 +110,9 @@ export default function LandingPage() {
                 <div className="max-w-[1400px] mx-auto px-6 py-16 md:py-24">
                     <div className="flex items-end justify-between flex-wrap gap-4 mb-10">
                         <div>
-                            <Chip>01 → 02 → 03 → 04</Chip>
-                            <h2 className="font-display text-5xl md:text-7xl mt-3">How it works</h2>
+                            <h2 className="font-display text-5xl md:text-7xl">How it works</h2>
                         </div>
-                        <p className="max-w-md text-gray-700">Onboard a restaurant in under 10 minutes. From menu upload to first order — everything lives in one dashboard.</p>
+                        <p className="max-w-md text-gray-700 text-sm md:text-base font-medium">Onboard your restaurant in minutes. From menu upload to 1:1 table WebAR orders: everything connects seamlessly in real-time.</p>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 stagger">
                         {[
@@ -136,12 +135,11 @@ export default function LandingPage() {
             </section>
 
             {/* Features grid */}
-            <section id="features" className="border-t-2 border-black">
+            <section id="features" className="border-t-2 border-black bg-[#F9F8F6]">
                 <div className="max-w-[1400px] mx-auto px-6 py-16 md:py-24 grid grid-cols-12 gap-6">
                     <div className="col-span-12 md:col-span-4">
-                        <Chip tone="orange">Built for scale</Chip>
-                        <h2 className="font-display text-5xl md:text-6xl mt-3">Every brand.<br/>One codebase.</h2>
-                        <p className="mt-5 text-gray-700 font-medium">Strict tenant_id isolation. Deploy once, serve thousands of independent restaurants — each with their own menu, brand, tables and analytics.</p>
+                        <h2 className="font-display text-5xl md:text-6xl tracking-tight">Every brand.<br/>One codebase.</h2>
+                        <p className="mt-5 text-gray-700 font-medium leading-relaxed">Strict tenant_id isolation. Deploy once, serve thousands of independent restaurants: each with dedicated menus, tables, and analytics.</p>
                     </div>
                     <div className="col-span-12 md:col-span-8 grid grid-cols-1 sm:grid-cols-2 gap-6">
                         {[
@@ -150,10 +148,10 @@ export default function LandingPage() {
                             { t: "Table-scoped QR codes", d: "Auto-generate a printable QR per table. Order lands with the exact table code attached.", icon: QrCode },
                             { t: "Analytics that matter", d: "Revenue, top dishes, average ticket, daily trends. No dashboard tourism.", icon: ChartLineUp },
                         ].map((f) => (
-                            <div key={f.t} className="hard-border bg-white p-6 hover:bg-[#FFF3E7] transition-colors">
+                            <div key={f.t} className="hard-border bg-white p-6 hover:bg-[#FFF3E7] hover:hard-shadow transition-all">
                                 <f.icon size={26} weight="bold" />
                                 <div className="font-display text-2xl mt-4">{f.t}</div>
-                                <div className="text-sm text-gray-700 mt-2" dangerouslySetInnerHTML={{ __html: f.d }} />
+                                <div className="text-sm text-gray-700 mt-2 leading-relaxed" dangerouslySetInnerHTML={{ __html: f.d }} />
                             </div>
                         ))}
                     </div>
@@ -161,25 +159,40 @@ export default function LandingPage() {
             </section>
 
             {/* Pricing */}
-            <section id="pricing" className="border-t-2 border-black bg-[#0A0A0A] text-white">
+            <section id="pricing" className="border-t-2 border-black bg-white text-black">
                 <div className="max-w-[1400px] mx-auto px-6 py-16 md:py-24">
-                    <Chip tone="orange">Pricing</Chip>
-                    <h2 className="font-display text-5xl md:text-7xl mt-3">Simple. Loud. Fair.</h2>
+                    <h2 className="font-display text-5xl md:text-7xl">Simple. Fair. Scalable.</h2>
+                    <p className="mt-3 text-gray-700 max-w-lg text-sm md:text-base font-medium">Predictable pricing with zero commissions on food sales. Pick the plan that matches your service scale.</p>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-10">
                         {[
-                            { name: "Starter", price: "$0", tag: "1 restaurant, 20 dishes", perks: ["QR menus", "3D up to 5 dishes", "Basic KDS"] },
-                            { name: "Growth", price: "8,999", featured: true, tag: "per location / month", perks: ["Unlimited dishes", "Unlimited 3D models", "Real-time KDS", "Advanced analytics"] },
-                            { name: "Empire", price: "Custom", tag: "50+ locations", perks: ["Dedicated SLA", "Custom branding", "SSO + audit logs", "White-label"] },
+                            { name: "Starter", price: "$0", period: "/month", tag: "1 restaurant, up to 20 dishes", perks: ["Instant QR menus", "3D previews up to 5 dishes", "Basic kitchen KDS", "Community support"] },
+                            { name: "Growth", price: "$99", period: "/location/mo", featured: true, tag: "High-volume independent venues", perks: ["Unlimited menu items", "Unlimited WebAR 3D models", "WebSocket real-time KDS", "Detailed sales & item analytics", "Priority 3D conversion pipeline"] },
+                            { name: "Empire", price: "Custom", period: "", tag: "Multi-concept groups & franchises", perks: ["Dedicated SLA & onboarding", "Custom restaurant domain", "Multi-brand centralized admin", "SSO & enterprise audit logs"] },
                         ].map((p) => (
-                            <div key={p.name} className={`p-8 border-2 ${p.featured ? "bg-[#FC8019] text-black border-[#FC8019]" : "bg-[#141414] border-white/15"}`}>
-                                <div className={`text-xs font-extrabold uppercase tracking-widest ${p.featured ? "text-black" : "text-white/60"}`}>{p.name}</div>
-                                <div className="font-display text-6xl mt-2">{p.price}</div>
-                                <div className={`text-sm mt-1 ${p.featured ? "text-black/80" : "text-white/70"}`}>{p.tag}</div>
-                                <div className="my-6 h-px bg-black/20"></div>
-                                <ul className="space-y-2 text-sm font-medium">
-                                    {p.perks.map((x) => <li key={x}>→ {x}</li>)}
-                                </ul>
-                                <button onClick={() => nav("/register")} className={`mt-8 w-full px-4 py-3 font-extrabold uppercase tracking-widest ${p.featured ? "bg-black text-white hover:bg-[#1a1a1a]" : "bg-white text-black hover:bg-[#FC8019]"} transition-colors`}>
+                            <div key={p.name} className={`p-8 border-2 hard-border transition-all flex flex-col justify-between ${p.featured ? "bg-[#FC8019] text-[#0A0A0A] hard-shadow-lg scale-[1.02] relative" : "bg-[#F9F8F6] text-black hard-shadow hover:-translate-y-1"}`}>
+                                {p.featured && (
+                                    <div className="absolute -top-3.5 left-6 bg-black text-white px-3 py-0.5 text-[10px] font-extrabold uppercase tracking-widest hard-border">
+                                        Most Popular
+                                    </div>
+                                )}
+                                <div>
+                                    <div className={`text-xs font-extrabold uppercase tracking-widest ${p.featured ? "text-[#0A0A0A]" : "text-gray-600"}`}>{p.name}</div>
+                                    <div className="flex items-baseline gap-1 mt-2">
+                                        <span className="font-display text-6xl tracking-tight tabular-nums">{p.price}</span>
+                                        {p.period && <span className={`text-sm font-bold ${p.featured ? "text-black/80" : "text-gray-600"}`}>{p.period}</span>}
+                                    </div>
+                                    <div className={`text-xs mt-1 font-medium ${p.featured ? "text-black/80" : "text-gray-600"}`}>{p.tag}</div>
+                                    <div className={`my-6 h-px ${p.featured ? "bg-black/20" : "bg-black/10"}`}></div>
+                                    <ul className="space-y-2.5 text-sm font-medium">
+                                        {p.perks.map((x) => (
+                                            <li key={x} className="flex items-start gap-2">
+                                                <span className="font-bold text-black">✓</span>
+                                                <span>{x}</span>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                                <button onClick={() => nav("/register")} className={`mt-8 w-full px-4 py-3 text-xs font-extrabold uppercase tracking-widest border-2 border-black transition-all active:scale-[0.98] ${p.featured ? "bg-black text-white hover:bg-neutral-900 shadow-md" : "brand-btn"}`}>
                                     Choose {p.name}
                                 </button>
                             </div>

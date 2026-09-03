@@ -109,83 +109,118 @@ export default function KDSPage() {
     }, [orders]);
 
     return (
-        <div className="min-h-screen kds-body flex flex-col" data-testid="kds-page">
-            <header className="border-b border-white/10 px-6 py-4 flex items-center justify-between">
+        <div className="min-h-[100dvh] kds-body flex flex-col" data-testid="kds-page">
+            <header className="border-b border-white/10 px-6 py-4 flex items-center justify-between bg-[#111111]">
                 <div className="flex items-center gap-4">
-                    <Link to="/dashboard" className="text-white/60 hover:text-white transition-colors" data-testid="kds-back-link">
-                        <ArrowLeft size={20} />
+                    <Link to="/dashboard" className="text-white/60 hover:text-white p-2 rounded-lg hover:bg-white/5 transition-colors" data-testid="kds-back-link" aria-label="Back to dashboard">
+                        <ArrowLeft size={22} />
                     </Link>
                     <div>
-                        <div className="text-[10px] uppercase tracking-widest text-white/40 font-bold">Kitchen Display System</div>
-                        <div className="font-display text-3xl">Line · Live</div>
+                        <div className="text-[10px] uppercase tracking-widest text-[#FC8019] font-extrabold flex items-center gap-1.5">
+                            <span className="w-2 h-2 rounded-full bg-[#FC8019]"></span>
+                            Live Kitchen Display
+                        </div>
+                        <div className="font-display text-3xl tracking-tight text-white">Line Command</div>
                     </div>
                 </div>
-                <div className="flex items-center gap-4">
-                    <div className="text-xs uppercase tracking-widest font-bold flex items-center gap-2">
-                        <span className={`w-2.5 h-2.5 rounded-full ${connected ? "bg-[#00C244]" : "bg-red-500"} ${connected ? "animate-pulse" : ""}`}></span>
-                        {connected ? "Realtime connected" : "Reconnecting…"}
+                <div className="flex items-center gap-5">
+                    <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full border border-white/10 bg-white/5 text-xs text-white/80 font-medium">
+                        <span>Active Tickets:</span>
+                        <span className="font-display text-base text-[#FC8019] tabular-nums">{orders.length}</span>
                     </div>
-                    <div className="text-xs font-mono text-white/70">{new Date(now).toLocaleTimeString()}</div>
+                    <div className="text-xs uppercase tracking-widest font-extrabold flex items-center gap-2 bg-black px-3 py-1.5 rounded-full border border-white/10">
+                        <span className={`w-2.5 h-2.5 rounded-full ${connected ? "bg-[#00C244] animate-pulse" : "bg-red-500"}`}></span>
+                        <span className={connected ? "text-white" : "text-red-400"}>
+                            {connected ? "WebSocket Connected" : "Reconnecting…"}
+                        </span>
+                    </div>
+                    <div className="text-sm font-mono text-white/80 tabular-nums px-2.5 py-1 bg-white/5 rounded border border-white/10">
+                        {new Date(now).toLocaleTimeString()}
+                    </div>
                 </div>
             </header>
 
-            <div className="flex-1 grid grid-cols-1 lg:grid-cols-3 gap-4 p-4">
+            <div className="flex-1 grid grid-cols-1 lg:grid-cols-3 gap-5 p-5 min-h-0 overflow-hidden">
                 {COLUMNS.map((col) => (
-                    <div key={col.key} className="flex flex-col min-h-0" data-testid={`kds-col-${col.key}`}>
-                        <div className="kds-col-head px-4 py-3 flex items-center justify-between mb-3" style={{ borderColor: col.color + "55" }}>
-                            <div className="flex items-center gap-2">
-                                <col.icon size={20} weight="bold" color={col.color} />
-                                <span className="font-display text-2xl">{col.label}</span>
+                    <div key={col.key} className="flex flex-col min-h-0 bg-[#121212] rounded-xl border border-white/10 p-3" data-testid={`kds-col-${col.key}`}>
+                        <div className="kds-col-head px-4 py-3.5 flex items-center justify-between mb-3 bg-[#181818] rounded-lg border" style={{ borderColor: col.color + "66" }}>
+                            <div className="flex items-center gap-2.5">
+                                <col.icon size={22} weight="bold" color={col.color} />
+                                <span className="font-display text-2xl tracking-wide">{col.label}</span>
                             </div>
-                            <span className="text-3xl font-display" style={{ color: col.color }}>{byStatus[col.key].length}</span>
+                            <span className="text-3xl font-display tabular-nums" style={{ color: col.color }}>{byStatus[col.key].length}</span>
                         </div>
-                        <div className="flex-1 space-y-3 overflow-y-auto scroll-thin pr-1">
+                        <div className="flex-1 space-y-3.5 overflow-y-auto scroll-thin pr-1">
                             {byStatus[col.key].map((o) => {
                                 const ageSec = Math.floor((now - new Date(o.created_at).getTime()) / 1000);
-                                const hot = col.key === "new" && ageSec > 90;
+                                const isUrgent = col.key === "new" && ageSec > 120;
+                                const isWarning = col.key === "new" && ageSec > 60 && !isUrgent;
+
                                 return (
-                                    <div key={o.id} className={`kds-card p-4 fade-in ${hot ? "ring-2 ring-[#FF3B30]" : ""}`} data-testid={`kds-ticket-${o.order_no}`}>
-                                        <div className="flex items-center justify-between">
-                                            <div className="font-display text-3xl leading-none">{o.order_no}</div>
+                                    <div key={o.id} className={`kds-card p-4 fade-in transition-all duration-150 rounded-lg ${isUrgent ? "ring-2 ring-[#FF3B30] bg-[#1a0f0f]" : isWarning ? "ring-1 ring-[#FFD400]/70" : "hover:border-white/20"}`} data-testid={`kds-ticket-${o.order_no}`}>
+                                        <div className="flex items-start justify-between pb-3 border-b border-white/10">
+                                            <div>
+                                                <div className="text-[10px] uppercase tracking-widest text-white/50 font-extrabold">Ticket</div>
+                                                <div className="font-display text-3xl leading-none text-white tracking-tight">{o.order_no}</div>
+                                            </div>
                                             <div className="text-right">
-                                                <div className="text-[10px] uppercase tracking-widest text-white/50 font-bold">Table</div>
-                                                <div className="font-display text-2xl leading-none">{o.table_code || "T/A"}</div>
+                                                <div className="text-[10px] uppercase tracking-widest text-white/50 font-extrabold">Destination</div>
+                                                <div className="inline-block mt-0.5 px-2.5 py-0.5 rounded font-display text-xl leading-none bg-[#FC8019] text-black">
+                                                    {o.table_code ? `Table ${o.table_code}` : "Takeaway"}
+                                                </div>
                                             </div>
                                         </div>
-                                        <div className="mt-3 space-y-1">
+                                        
+                                        <div className="py-3 space-y-2">
                                             {o.items.map((it, i) => (
-                                                <div key={i} className="flex items-start justify-between text-sm">
-                                                    <div>
-                                                        <span className="text-[#FC8019] font-extrabold">×{it.qty}</span>{" "}
-                                                        <span className="font-semibold">{it.name}</span>
-                                                        {it.note && <div className="text-[11px] text-white/50 italic">— {it.note}</div>}
+                                                <div key={i} className="flex items-start justify-between text-sm leading-snug">
+                                                    <div className="flex items-start gap-2">
+                                                        <span className="font-display text-lg text-[#FC8019] leading-none">×{it.qty}</span>
+                                                        <div>
+                                                            <span className="font-bold text-white/95">{it.name}</span>
+                                                            {it.note && <div className="text-xs text-[#FFD400] italic mt-0.5">Note: {it.note}</div>}
+                                                        </div>
                                                     </div>
                                                 </div>
                                             ))}
                                         </div>
-                                        <div className="mt-3 flex items-center justify-between text-[11px] text-white/50 uppercase tracking-widest font-bold">
-                                            <span>{timeAgo(o.created_at)} ago</span>
-                                            <span>${o.total.toFixed(2)}</span>
+
+                                        <div className="pt-2.5 border-t border-white/10 flex items-center justify-between text-xs text-white/60 font-medium">
+                                            <span className={`font-mono font-bold flex items-center gap-1 ${isUrgent ? "text-[#FF3B30] animate-pulse" : isWarning ? "text-[#FFD400]" : "text-white/60"}`}>
+                                                ⏱ {timeAgo(o.created_at)} ago
+                                            </span>
+                                            <span className="font-mono tabular-nums text-white/80 font-bold">${o.total.toFixed(2)}</span>
                                         </div>
-                                        <div className="mt-3 grid grid-cols-2 gap-2">
+
+                                        <div className="mt-3.5 flex flex-col gap-2">
                                             {col.key === "new" && (
                                                 <>
-                                                    <button onClick={() => setStatus(o, "preparing")} className="col-span-2 py-2 bg-[#FC8019] text-black font-extrabold uppercase tracking-widest text-xs hover:bg-[#E56B0C] transition-colors" data-testid={`kds-start-${o.order_no}`}>Start cooking →</button>
-                                                    <button onClick={() => setStatus(o, "cancelled")} className="col-span-2 py-2 border border-white/20 text-white/70 text-xs uppercase tracking-widest font-bold hover:bg-red-500/20 hover:text-white transition-colors" data-testid={`kds-cancel-${o.order_no}`}>Cancel</button>
+                                                    <button onClick={() => setStatus(o, "preparing")} className="w-full py-3 bg-[#FC8019] text-black font-extrabold uppercase tracking-wider text-xs rounded hover:bg-[#E56B0C] active:scale-[0.98] transition-all shadow-md" data-testid={`kds-start-${o.order_no}`}>
+                                                        Start cooking →
+                                                    </button>
+                                                    <button onClick={() => setStatus(o, "cancelled")} className="w-full py-1.5 border border-white/15 text-white/60 text-[11px] uppercase tracking-wider font-bold rounded hover:bg-red-500/20 hover:text-red-300 hover:border-red-500/40 transition-colors" data-testid={`kds-cancel-${o.order_no}`}>
+                                                        Cancel ticket
+                                                    </button>
                                                 </>
                                             )}
                                             {col.key === "preparing" && (
-                                                <button onClick={() => setStatus(o, "ready")} className="col-span-2 py-2 bg-[#00C244] text-black font-extrabold uppercase tracking-widest text-xs hover:brightness-95 transition-all" data-testid={`kds-ready-${o.order_no}`}>Mark ready →</button>
+                                                <button onClick={() => setStatus(o, "ready")} className="w-full py-3 bg-[#00C244] text-black font-extrabold uppercase tracking-wider text-xs rounded hover:bg-[#00A83A] active:scale-[0.98] transition-all shadow-md" data-testid={`kds-ready-${o.order_no}`}>
+                                                    Mark ready for pass ✓
+                                                </button>
                                             )}
                                             {col.key === "ready" && (
-                                                <button onClick={() => setStatus(o, "served")} className="col-span-2 py-2 bg-white text-black font-extrabold uppercase tracking-widest text-xs hover:bg-white/80 transition-colors" data-testid={`kds-served-${o.order_no}`}>Served ✓</button>
+                                                <button onClick={() => setStatus(o, "served")} className="w-full py-3 bg-white text-black font-extrabold uppercase tracking-wider text-xs rounded hover:bg-gray-200 active:scale-[0.98] transition-all shadow-md" data-testid={`kds-served-${o.order_no}`}>
+                                                    Order served & close ✦
+                                                </button>
                                             )}
                                         </div>
                                     </div>
                                 );
                             })}
                             {byStatus[col.key].length === 0 && (
-                                <div className="text-center text-white/30 py-16 text-xs uppercase tracking-widest font-bold">No tickets</div>
+                                <div className="text-center text-white/30 py-20 text-xs uppercase tracking-widest font-extrabold">
+                                    Queue Empty
+                                </div>
                             )}
                         </div>
                     </div>

@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { Cube, VideoCamera, ArrowClockwise, Download, ArrowUpRight, SignOut, Storefront } from "@phosphor-icons/react";
+import { Cube, VideoCamera, ArrowClockwise, Download, ArrowUpRight, SignOut, Storefront, Sparkle, CircleNotch } from "@phosphor-icons/react";
 import { http, formatApiError } from "../lib/api";
 import { useAuth } from "../lib/auth";
 import ModelViewer from "../components/ModelViewer";
@@ -23,6 +23,40 @@ export default function SuperAdminPage() {
     const [queue, setQueue] = useState([]);
     const [tenants, setTenants] = useState([]);
     const [uploadFor, setUploadFor] = useState(null);
+    const [aiGenerating, setAiGenerating] = useState({});
+
+    async function triggerAi(d) {
+        setAiGenerating((prev) => ({ ...prev, [d.id]: true }));
+        try {
+            toast("✨ Hugging Face AI pipeline started — synthesizing 3D mesh…", { duration: 4000 });
+            await http.post(`/superadmin/dishes/${d.id}/auto-generate-3d`);
+            let attempts = 0;
+            const interval = setInterval(async () => {
+                attempts++;
+                try {
+                    const res = await http.get("/superadmin/queue");
+                    setQueue(res.data);
+                    const updated = res.data.find((item) => item.id === d.id);
+                    if (!updated || updated.model_status === "ready") {
+                        clearInterval(interval);
+                        setAiGenerating((prev) => ({ ...prev, [d.id]: false }));
+                        toast.success(`🎉 3D model generated for "${d.name}" and published to Diner Menu!`);
+                        reload();
+                    } else if (attempts > 30) {
+                        clearInterval(interval);
+                        setAiGenerating((prev) => ({ ...prev, [d.id]: false }));
+                        reload();
+                    }
+                } catch {
+                    clearInterval(interval);
+                    setAiGenerating((prev) => ({ ...prev, [d.id]: false }));
+                }
+            }, 3000);
+        } catch (e) {
+            toast.error(formatApiError(e, "AI generation failed"));
+            setAiGenerating((prev) => ({ ...prev, [d.id]: false }));
+        }
+    }
 
     async function reload() {
         try {
@@ -113,6 +147,26 @@ export default function SuperAdminPage() {
                                         <div className="aspect-video bg-gray-100 hard-border grid place-items-center text-xs text-gray-500 mb-3 rounded-xl">No video</div>
                                     )}
                                     <div className="flex flex-wrap gap-2">
+                                        <button
+                                            onClick={() => triggerAi(d)}
+                                            disabled={aiGenerating[d.id] || d.model_status === "processing"}
+                                            className={`px-3 py-2 text-xs font-extrabold uppercase tracking-wider rounded-xl inline-flex items-center gap-1.5 border-2 border-black transition-all active:scale-[0.98] ${
+                                                aiGenerating[d.id] || d.model_status === "processing"
+                                                    ? "bg-purple-100 text-purple-700 cursor-not-allowed"
+                                                    : "bg-[#7C3AED] hover:bg-[#6D28D9] text-white shadow-sm"
+                                            }`}
+                                            data-testid={`super-auto-ai-${d.id}`}
+                                        >
+                                            {aiGenerating[d.id] || d.model_status === "processing" ? (
+                                                <>
+                                                    <CircleNotch size={14} className="animate-spin" /> AI Generating…
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <Sparkle size={14} weight="fill" className="text-yellow-300" /> Auto-Generate (AI)
+                                                </>
+                                            )}
+                                        </button>
                                         {d.video_url && (
                                             <a href={d.video_url} download className="ghost-btn px-3 py-2 text-xs inline-flex items-center gap-2 rounded-xl" data-testid={`super-download-${d.id}`}>
                                                 <Download size={14} weight="bold" /> Download video

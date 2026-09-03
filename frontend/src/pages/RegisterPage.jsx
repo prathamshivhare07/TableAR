@@ -32,7 +32,7 @@ export default function RegisterPage() {
         setLoading(true);
         try {
             await register({ ...form, slug: form.slug || slugify(form.restaurant_name) });
-            toast.success("Welcome to Tabler.AR");
+            toast.success("Welcome to Table.AR");
             nav("/dashboard");
         } catch (err) {
             toast.error(formatApiError(err, "Registration failed"));
@@ -44,7 +44,7 @@ export default function RegisterPage() {
     return (
         <div className="min-h-[100dvh] w-full max-w-full overflow-x-clip bg-[#F9F8F6] grid md:grid-cols-2" data-testid="register-page">
             <div className="hidden md:flex flex-col justify-between p-10 bg-black text-white border-r-2 border-black">
-                <Link to="/" className="font-display text-3xl">Tabler<span className="text-[#FC8019]">.AR</span></Link>
+                <Link to="/" className="font-display text-3xl">Table<span className="text-[#FC8019]">.AR</span></Link>
                 <div>
                     <div className="font-display text-6xl leading-[0.9]">Start<br/>in <span className="text-[#FC8019]">10 min.</span></div>
                     <div className="mt-5 max-w-md text-white/80 font-medium">Register your restaurant, get a public menu URL, drop QR codes on tables, and start plating.</div>

@@ -64,12 +64,12 @@ export default function LandingPage() {
             {/* Top Navigation */}
             <header className="border-b-2 border-black bg-white/90 backdrop-blur-md sticky top-0 z-40 w-full max-w-full">
                 <div className="max-w-[1400px] mx-auto flex items-center justify-between px-4 sm:px-6 py-4">
-                    <Link to="/" className="flex items-center gap-2.5 group shrink-0" data-testid="brand-link" aria-label="Tabler.AR Home">
+                    <Link to="/" className="flex items-center gap-2.5 group shrink-0" data-testid="brand-link" aria-label="Table.AR Home">
                         <div className="w-10 h-10 bg-[#FC8019] hard-border grid place-items-center group-hover:rotate-6 transition-transform rounded-xl">
                             <ForkKnife size={22} weight="fill" color="#0A0A0A" />
                         </div>
                         <div className="font-display text-2xl leading-none tracking-tight">
-                            Tabler<span className="text-[#FC8019]">.AR</span>
+                            Table<span className="text-[#FC8019]">.AR</span>
                         </div>
                     </Link>
 
@@ -509,7 +509,7 @@ export default function LandingPage() {
                                 <div className="w-9 h-9 bg-[#FC8019] hard-border grid place-items-center rounded-xl">
                                     <ForkKnife size={18} weight="fill" color="#0A0A0A" />
                                 </div>
-                                <span className="font-display text-2xl tracking-tight">Tabler<span className="text-[#FC8019]">.AR</span></span>
+                                <span className="font-display text-2xl tracking-tight">Table<span className="text-[#FC8019]">.AR</span></span>
                             </div>
                             <p className="text-xs text-gray-600 font-medium mt-3 max-w-sm leading-relaxed">
                                 The modern restaurant ordering operating system. Eliminating menu hesitation with instant 1:1 WebAR dish projections and live kitchen ticket streaming.
@@ -550,7 +550,7 @@ export default function LandingPage() {
                             <div className="text-xs font-black uppercase tracking-widest text-[#0A0A0A] mb-3">Trust & Compliance</div>
                             <ul className="space-y-2 text-xs font-bold text-gray-600">
                                 <li>
-                                    <a href="#privacy" onClick={(e) => { e.preventDefault(); alert("Tabler.AR uses minimal privacy-preserving analytics with zero diner tracking cookies."); }} className="hover:text-[#FC8019] transition-colors">
+                                    <a href="#privacy" onClick={(e) => { e.preventDefault(); alert("Table.AR uses minimal privacy-preserving analytics with zero diner tracking cookies."); }} className="hover:text-[#FC8019] transition-colors">
                                         Privacy Policy
                                     </a>
                                 </li>
@@ -567,7 +567,7 @@ export default function LandingPage() {
                     </div>
 
                     <div className="pt-6 flex flex-wrap items-center justify-between gap-4 text-xs font-bold text-gray-500">
-                        <div>© 2026 Tabler.AR Technologies Inc. All rights reserved.</div>
+                        <div>© 2026 Table.AR Technologies Inc. All rights reserved.</div>
                         <div className="flex items-center gap-4">
                             <Link to="/login" className="hover:text-[#FC8019] transition-colors">Merchant Portal</Link>
                             <span>·</span>

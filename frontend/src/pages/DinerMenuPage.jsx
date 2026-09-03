@@ -359,7 +359,7 @@ export default function DinerMenuPage() {
 
             {/* Footer */}
             <div className="max-w-2xl mx-auto px-5 mt-12 pt-6 border-t-2 border-black text-center text-xs uppercase tracking-widest font-bold text-gray-500">
-                Powered by <span className="text-[#FC8019] font-display text-base tracking-wide">Tabler.AR</span>
+                Powered by <span className="text-[#FC8019] font-display text-base tracking-wide">Table.AR</span>
             </div>
         </div>
     );

@@ -102,7 +102,7 @@ export default function DashboardPage() {
             {/* Sidebar */}
             <aside className="w-64 border-r-2 border-black bg-white p-6 hidden md:flex flex-col justify-between sticky top-0 h-screen">
                 <div>
-                    <Link to="/" className="font-display text-2xl">Tabler<span className="text-[#FC8019]">.AR</span></Link>
+                    <Link to="/" className="font-display text-2xl">Table<span className="text-[#FC8019]">.AR</span></Link>
                     <div className="mt-1 text-[10px] uppercase tracking-widest font-bold text-gray-500">Merchant Console</div>
                     <nav className="mt-10 space-y-1">
                         {[
@@ -305,7 +305,7 @@ function MenuTab({ dishes, categories, onChanged }) {
                                 </div>
                             </div>
                             <div className="p-4">
-                                <div className="text-[10px] uppercase tracking-widest text-gray-500 font-bold">{cat?.name || "Uncategorised"}</div>
+                                <div className="text-[10px] uppercase tracking-widest text-gray-500 font-bold">{cat?.name || "Uncategorized"}</div>
                                 <div className="flex items-center justify-between mt-1">
                                     <div className="font-display text-2xl">{d.name}</div>
                                     <div className="font-display text-xl text-[#FC8019]">₹{d.price.toFixed(2)}</div>
@@ -376,7 +376,7 @@ function CategoriesModal({ categories, onClose, onChanged }) {
     }
 
     async function del(c) {
-        if (!window.confirm(`Delete category "${c.name}"?\n(Dishes in this category will remain but become uncategorised.)`)) return;
+        if (!window.confirm(`Delete category "${c.name}"?\n(Dishes in this category will remain but become uncategorized.)`)) return;
         try {
             await http.delete(`/tenant/categories/${c.id}`);
             toast.success("Category deleted");

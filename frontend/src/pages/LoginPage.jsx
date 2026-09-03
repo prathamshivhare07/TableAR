@@ -26,7 +26,7 @@ export default function LoginPage() {
     }
 
     return (
-        <div className="min-h-[100dvh] bg-[#F9F8F6] grid md:grid-cols-2" data-testid="login-page">
+        <div className="min-h-screen bg-[#F9F8F6] grid md:grid-cols-2" data-testid="login-page">
             <div className="hidden md:flex flex-col justify-between p-10 bg-[#FC8019] text-black border-r-2 border-black">
                 <Link to="/" className="font-display text-3xl" data-testid="login-brand">Tabler.AR</Link>
                 <div>

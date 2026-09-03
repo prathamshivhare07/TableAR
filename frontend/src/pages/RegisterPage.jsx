@@ -42,7 +42,7 @@ export default function RegisterPage() {
     }
 
     return (
-        <div className="min-h-[100dvh] bg-[#F9F8F6] grid md:grid-cols-2" data-testid="register-page">
+        <div className="min-h-screen bg-[#F9F8F6] grid md:grid-cols-2" data-testid="register-page">
             <div className="hidden md:flex flex-col justify-between p-10 bg-black text-white border-r-2 border-black">
                 <Link to="/" className="font-display text-3xl">Tabler<span className="text-[#FC8019]">.AR</span></Link>
                 <div>

@@ -1,8 +1,8 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { Cube, VideoCamera, ArrowClockwise, Download, ArrowUpRight, SignOut, Storefront } from "@phosphor-icons/react";
-import { http, formatApiError } from "../lib/api";
+import { Cube, VideoCamera, ArrowClockwise, Download, ArrowUpRight, SignOut, Storefront, MagicWand } from "@phosphor-icons/react";
+import { http, formatApiError, getToken, API } from "../lib/api";
 import { useAuth } from "../lib/auth";
 import ModelViewer from "../components/ModelViewer";
 
@@ -23,6 +23,7 @@ export default function SuperAdminPage() {
     const [queue, setQueue] = useState([]);
     const [tenants, setTenants] = useState([]);
     const [uploadFor, setUploadFor] = useState(null);
+    const [generateFor, setGenerateFor] = useState(null);
 
     async function reload() {
         try {
@@ -118,6 +119,9 @@ export default function SuperAdminPage() {
                                                 <Download size={14} weight="bold" /> Download video
                                             </a>
                                         )}
+                                        <button onClick={() => setGenerateFor(d)} className="ghost-btn px-3 py-2 text-xs inline-flex items-center gap-2 rounded-xl" data-testid={`super-generate-${d.id}`}>
+                                            <MagicWand size={14} weight="bold" /> AI Generate
+                                        </button>
                                         <button onClick={() => setUploadFor(d)} className="brand-btn px-3 py-2 text-xs inline-flex items-center gap-2 rounded-xl" data-testid={`super-upload-glb-${d.id}`}>
                                             <Cube size={14} weight="bold" /> Upload .glb
                                         </button>
@@ -174,6 +178,9 @@ export default function SuperAdminPage() {
             {uploadFor && (
                 <UploadGlbModal dish={uploadFor} onClose={() => setUploadFor(null)} onDone={() => { setUploadFor(null); reload(); }} />
             )}
+            {generateFor && (
+                <AIGenerateModal dish={generateFor} onClose={() => { setGenerateFor(null); reload(); }} />
+            )}
         </div>
     );
 }
@@ -218,6 +225,73 @@ function UploadGlbModal({ dish, onClose, onDone }) {
                     <button onClick={submit} disabled={!file || uploading} className="brand-btn px-4 py-3 text-sm rounded-xl" data-testid="super-glb-submit">
                         {uploading ? "Uploading…" : "Publish → diner menu"}
                     </button>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+function AIGenerateModal({ dish, onClose }) {
+    const [logs, setLogs] = useState([]);
+    const [done, setDone] = useState(false);
+    const logsEndRef = React.useRef(null);
+
+    useEffect(() => {
+        if (logsEndRef.current) {
+            logsEndRef.current.scrollIntoView({ behavior: "smooth" });
+        }
+    }, [logs]);
+
+    useEffect(() => {
+        const token = getToken();
+        if (!token) return;
+
+        const url = `${API}/superadmin/dishes/${dish.id}/generate-stream?token=${token}`;
+        const es = new EventSource(url);
+
+        es.onmessage = (e) => {
+            if (e.data === "[PROCESS_FINISHED]") {
+                setDone(true);
+                es.close();
+            } else {
+                setLogs((prev) => [...prev, e.data]);
+            }
+        };
+
+        es.onerror = () => {
+            setLogs((prev) => [...prev, "[SYSTEM ERROR] EventSource connection closed or process crashed."]);
+            setDone(true);
+            es.close();
+        };
+
+        return () => {
+            es.close();
+        };
+    }, [dish.id]);
+
+    return (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" data-testid="super-generate-modal">
+            <div className="bg-white hard-border hard-shadow-lg w-full max-w-4xl flex flex-col rounded-2xl overflow-hidden h-[80vh]">
+                <div className="p-4 border-b-2 border-black flex justify-between items-center bg-[#F9F8F6]">
+                    <div>
+                        <div className="text-[10px] uppercase tracking-widest font-extrabold text-[#FC8019]">Live AI Generation</div>
+                        <div className="font-display text-xl">{dish.name}</div>
+                    </div>
+                    {done && <button onClick={onClose} className="brand-btn px-4 py-2 text-xs rounded-lg" data-testid="super-generate-close">Done & Refresh</button>}
+                    {!done && <button onClick={onClose} className="ghost-btn px-4 py-2 text-xs rounded-lg text-red-500">Run in background (Close)</button>}
+                </div>
+                <div className="flex-1 bg-[#1E1E1E] p-4 overflow-y-auto font-mono text-[13px] text-green-400 whitespace-pre-wrap leading-relaxed">
+                    {logs.map((l, i) => {
+                        let colorClass = "";
+                        if (l.includes("ERROR") || l.includes("AVOCADO FALLBACK")) colorClass = "text-red-400 font-bold";
+                        else if (l.includes("WARNING") || l.includes("REALITYSCAN DETECTED")) colorClass = "text-yellow-400 font-bold";
+                        
+                        return <div key={i} className={colorClass}>{l}</div>;
+                    })}
+                    {!done && (
+                        <div className="mt-2 animate-pulse text-gray-500">_</div>
+                    )}
+                    <div ref={logsEndRef} />
                 </div>
             </div>
         </div>

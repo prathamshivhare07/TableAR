@@ -21,7 +21,7 @@ from fastapi import (
     FastAPI, APIRouter, HTTPException, Depends, Response, WebSocket,
     WebSocketDisconnect, Query, UploadFile, File, Request,
 )
-from fastapi.responses import Response as FastResponse
+from fastapi.responses import Response as FastResponse, StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 from pydantic import BaseModel, EmailStr, Field
@@ -662,6 +662,47 @@ async def sa_mark_processing(did: str, _=Depends(require_super_admin)):
     if res.matched_count == 0:
         raise HTTPException(404, "Not found")
     return {"ok": True}
+
+
+@api.get("/superadmin/dishes/{did}/generate-stream")
+async def sa_generate_stream(did: str, token: str = Query(...)):
+    """Run auto_process_3d.py and stream logs to client via SSE."""
+    try:
+        payload = decode_token(token)
+    except HTTPException:
+        raise HTTPException(401, "Invalid token")
+    if payload.get("role") != "super_admin":
+        raise HTTPException(403, "Forbidden")
+        
+    dish = await db.dishes.find_one({"id": did})
+    if not dish:
+        raise HTTPException(404, "Dish not found")
+        
+    await db.dishes.update_one({"id": did}, {"$set": {"model_status": "processing"}})
+    
+    script_path = ROOT_DIR.parent / "scripts" / "auto_process_3d.py"
+    
+    async def event_generator():
+        yield "data: [SYSTEM] Starting photogrammetry pipeline...\n\n"
+        process = await asyncio.create_subprocess_exec(
+            "python", str(script_path), "--dish-id", did,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.STDOUT,
+            cwd=str(ROOT_DIR.parent)
+        )
+        
+        while True:
+            line = await process.stdout.readline()
+            if not line:
+                break
+            text = line.decode('utf-8', errors='replace').rstrip()
+            yield f"data: {text}\n\n"
+            
+        await process.wait()
+        yield f"data: [SYSTEM] Process finished with exit code {process.returncode}\n\n"
+        yield "data: [PROCESS_FINISHED]\n\n"
+        
+    return StreamingResponse(event_generator(), media_type="text/event-stream")
 
 
 @api.post("/superadmin/dishes/{did}/reset")

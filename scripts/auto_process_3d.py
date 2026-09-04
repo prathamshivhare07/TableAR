@@ -52,9 +52,11 @@ ADMIN_EMAIL = os.environ.get("ADMIN_EMAIL", "admin@tabler.ar")
 ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "admin123")
 WORKSPACE_DIR = ROOT_DIR / "scripts" / "workspace"
 
-# Known RealityCapture installation paths on Windows
+# Known RealityCapture / RealityScan installation paths on Windows
 RC_PATHS = [
     os.environ.get("REALITY_CAPTURE_PATH", ""),
+    r"C:\Program Files\Epic Games\RealityScan_2.2\RealityScan.exe",
+    r"C:\Program Files\Epic Games\RealityScan\RealityScan.exe",
     r"C:\Program Files\Capturing Reality\RealityCapture\RealityCapture.exe",
     r"C:\Program Files\Epic Games\RealityCapture\RealityCapture.exe",
 ]
@@ -149,8 +151,8 @@ def find_executable(candidates: List[str]) -> Optional[Path]:
 def extract_sharp_frames(
     video_path: Path,
     output_dir: Path,
-    target_count: int = 72,
-    min_blur_threshold: float = 30.0,
+    target_count: int = 200,
+    min_blur_threshold: float = 50.0,
 ) -> List[Path]:
     """
     Extracts sharp, evenly distributed frames across a 360° video walk-around.
@@ -197,22 +199,52 @@ def extract_sharp_frames(
 
 
 def run_reality_capture(rc_exe: Path, frames_dir: Path, output_glb: Path) -> bool:
-    """Runs headless RealityCapture photogrammetry reconstruction via CLI."""
-    log.info("Launching RealityCapture photogrammetry engine...")
-    temp_obj = output_glb.with_suffix(".obj")
+    """Runs RealityCapture CLI or launches RealityScan with the extracted frames."""
+    log.info("Found Photogrammetry Engine: %s", rc_exe)
 
+    # Check if a custom exported GLB or OBJ already exists in the dish workspace
+    for candidate in output_glb.parent.glob("*.glb"):
+        if candidate.stat().st_size > 1000:
+            if candidate != output_glb:
+                shutil.copy(candidate, output_glb)
+            log.info("Found user-exported 3D model: %s (%.2f MB)", candidate.name, candidate.stat().st_size / (1024 * 1024))
+            return True
+
+    # If it is RealityScan Desktop GUI
+    if "realityscan" in str(rc_exe).lower():
+        num_frames = len(list(frames_dir.glob("*.jpg")))
+        log.info("=" * 65)
+        log.info("🎯 REALITYSCAN DETECTED ON YOUR PC!")
+        log.info("All %d sharp frames from your video are ready in:", num_frames)
+        log.info("📁 %s", frames_dir)
+        log.info("-" * 65)
+        log.info("To create the real 3D dish model:")
+        log.info(" 1. In RealityScan, click 'New Project' -> 'Add Photos'.")
+        log.info(" 2. Select the photos inside the folder above.")
+        log.info(" 3. Click 'Process' -> 'Export Model' -> choose .glb format.")
+        log.info(" 4. Save the .glb into: %s", output_glb)
+        log.info("    (The script will automatically detect and upload it live!)")
+        log.info("=" * 65)
+        try:
+            # Automatically open the frames folder in Windows File Explorer
+            os.startfile(str(frames_dir))
+        except Exception:
+            pass
+        return False
+
+    temp_obj = output_glb.with_suffix(".obj")
     cmd = (
         f'"{rc_exe}" -headless '
         f'-addFolder "{frames_dir}" '
         f'-align '
         f'-setReconstructionRegionAuto '
         f'-calculateHighModel '
-        f'-simplify 50000 '
+        f'-simplify 150000 '
         f'-calculateTexture '
         f'-exportModel "{temp_obj}" '
         f'-quit'
     )
-    log.info("Executing: %s", cmd)
+    log.info("Executing CLI: %s", cmd)
     ret = os.system(cmd)
     if ret == 0 and temp_obj.exists():
         shutil.move(temp_obj, output_glb)
@@ -299,7 +331,7 @@ def process_dish(client: SuperAdminClient, dish: dict, engine_choice: str = "aut
 
     # 2. Extract sharp keyframes
     try:
-        frames = extract_sharp_frames(video_path, frames_dir, target_count=72)
+        frames = extract_sharp_frames(video_path, frames_dir, target_count=200)
     except Exception as e:
         log.error("Frame extraction error: %s", e)
         return False
@@ -314,8 +346,18 @@ def process_dish(client: SuperAdminClient, dish: dict, engine_choice: str = "aut
     elif (engine_choice in ("auto", "meshroom")) and meshroom_exe:
         success = run_meshroom(meshroom_exe, frames_dir, output_glb)
 
-    if not success or not output_glb.exists():
-        log.info("External photogrammetry tool not detected or bypassed. Using automated photogrammetric builder...")
+    if not success and not output_glb.exists():
+        if rc_exe and "realityscan" in str(rc_exe).lower():
+            log.warning("RealityScan detected! Waiting for your exported .glb file.")
+            log.warning("Save the exported 3D model into: %s", output_glb)
+            log.warning("As soon as it is saved there, this script will upload it automatically.")
+            return False
+        log.error("=" * 65)
+        log.error("🚨 AVOCADO FALLBACK TRIGGERED 🚨")
+        log.error("RealityCapture or Meshroom was not found, or it failed to run.")
+        log.error("The system is now downloading a placeholder Avocado model.")
+        log.error("To fix this, make sure RealityScan is installed, or export the model yourself.")
+        log.error("=" * 65)
         build_photogrammetric_glb(frames, output_glb, dish_name)
 
     # 4. Upload .glb to Table.AR Super Admin
